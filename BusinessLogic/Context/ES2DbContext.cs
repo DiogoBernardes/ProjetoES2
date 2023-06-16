@@ -16,9 +16,25 @@ public partial class ES2DbContext : DbContext
     {
     }
 
-    public virtual DbSet<Author> Authors { get; set; }
+    public virtual DbSet<activity_info> activity_infos { get; set; }
 
-    public virtual DbSet<Book> Books { get; set; }
+    public virtual DbSet<activity_participant> activity_participants { get; set; }
+
+    public virtual DbSet<event_info> event_infos { get; set; }
+
+    public virtual DbSet<event_regist> event_regists { get; set; }
+
+    public virtual DbSet<event_ticket> event_tickets { get; set; }
+
+    public virtual DbSet<message> messages { get; set; }
+
+    public virtual DbSet<regist_state> regist_states { get; set; }
+
+    public virtual DbSet<role> roles { get; set; }
+
+    public virtual DbSet<ticket_type> ticket_types { get; set; }
+
+    public virtual DbSet<user> users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
@@ -31,45 +47,122 @@ public partial class ES2DbContext : DbContext
             .HasPostgresExtension("uuid-ossp")
             .HasPostgresExtension("topology", "postgis_topology");
 
-        modelBuilder.Entity<Author>(entity =>
+        modelBuilder.Entity<activity_info>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("authors_pkey");
+            entity.HasKey(e => e.id).HasName("activity_info_pkey");
 
-            entity.ToTable("authors");
+            entity.Property(e => e.id).HasDefaultValueSql("uuid_generate_v4()");
 
-            entity.Property(e => e.Id)
-                .HasDefaultValueSql("uuid_generate_v4()")
-                .HasColumnName("id");
-            entity.Property(e => e.BirthDate).HasColumnName("birth_date");
-            entity.Property(e => e.FirstName)
-                .HasMaxLength(100)
-                .HasColumnName("first_name");
-            entity.Property(e => e.LastName)
-                .HasMaxLength(100)
-                .HasColumnName("last_name");
+            entity.HasOne(d => d._event).WithMany(p => p.activity_infos)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("activity_info_event_id_fkey");
         });
 
-        modelBuilder.Entity<Book>(entity =>
+        modelBuilder.Entity<activity_participant>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("books_pkey");
+            entity.HasOne(d => d.activity).WithMany()
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("activity_participant_activity_id_fkey");
 
-            entity.ToTable("books");
+            entity.HasOne(d => d.participant).WithMany()
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("activity_participant_participant_id_fkey");
+        });
 
-            entity.Property(e => e.Id)
-                .HasDefaultValueSql("uuid_generate_v4()")
-                .HasColumnName("id");
-            entity.Property(e => e.AuthorId).HasColumnName("author_id");
-            entity.Property(e => e.PublicationYear).HasColumnName("publication_year");
-            entity.Property(e => e.Status)
-                .HasMaxLength(20)
-                .HasColumnName("status");
-            entity.Property(e => e.Title)
-                .HasMaxLength(255)
-                .HasColumnName("title");
+        modelBuilder.Entity<event_info>(entity =>
+        {
+            entity.HasKey(e => e.id).HasName("event_info_pkey");
 
-            entity.HasOne(d => d.Author).WithMany(p => p.Books)
-                .HasForeignKey(d => d.AuthorId)
-                .HasConstraintName("books_author_id_fkey");
+            entity.Property(e => e.id).HasDefaultValueSql("uuid_generate_v4()");
+
+            entity.HasOne(d => d.organizer).WithMany(p => p.event_infos)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("event_info_organizer_id_fkey");
+        });
+
+        modelBuilder.Entity<event_regist>(entity =>
+        {
+            entity.HasKey(e => e.id).HasName("event_regist_pkey");
+
+            entity.Property(e => e.id).HasDefaultValueSql("uuid_generate_v4()");
+
+            entity.HasOne(d => d._event).WithMany(p => p.event_regists)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("event_regist_event_id_fkey");
+
+            entity.HasOne(d => d.participant).WithMany(p => p.event_regists)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("event_regist_participant_id_fkey");
+
+            entity.HasOne(d => d.state).WithMany(p => p.event_regists)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("event_regist_state_id_fkey");
+
+            entity.HasOne(d => d.ticket_type).WithMany(p => p.event_regists)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("event_regist_ticket_type_id_fkey");
+        });
+
+        modelBuilder.Entity<event_ticket>(entity =>
+        {
+            entity.HasOne(d => d._event).WithMany()
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("event_ticket_event_id_fkey");
+
+            entity.HasOne(d => d.ticket_typeNavigation).WithMany()
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("event_ticket_ticket_type_fkey");
+        });
+
+        modelBuilder.Entity<message>(entity =>
+        {
+            entity.HasKey(e => e.id).HasName("messages_pkey");
+
+            entity.Property(e => e.id).HasDefaultValueSql("uuid_generate_v4()");
+
+            entity.HasOne(d => d._event).WithMany(p => p.messages)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("messages_event_id_fkey");
+
+            entity.HasOne(d => d.organizer).WithMany(p => p.messageorganizers)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("messages_organizer_id_fkey");
+
+            entity.HasOne(d => d.participant).WithMany(p => p.messageparticipants)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("messages_participant_id_fkey");
+        });
+
+        modelBuilder.Entity<regist_state>(entity =>
+        {
+            entity.HasKey(e => e.id).HasName("regist_state_pkey");
+
+            entity.Property(e => e.id).HasDefaultValueSql("uuid_generate_v4()");
+        });
+
+        modelBuilder.Entity<role>(entity =>
+        {
+            entity.HasKey(e => e.id).HasName("roles_pkey");
+
+            entity.Property(e => e.id).HasDefaultValueSql("uuid_generate_v4()");
+        });
+
+        modelBuilder.Entity<ticket_type>(entity =>
+        {
+            entity.HasKey(e => e.id).HasName("ticket_type_pkey");
+
+            entity.Property(e => e.id).HasDefaultValueSql("uuid_generate_v4()");
+        });
+
+        modelBuilder.Entity<user>(entity =>
+        {
+            entity.HasKey(e => e.id).HasName("users_pkey");
+
+            entity.Property(e => e.id).HasDefaultValueSql("uuid_generate_v4()");
+
+            entity.HasOne(d => d.role).WithMany(p => p.users)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("users_role_id_fkey");
         });
 
         OnModelCreatingPartial(modelBuilder);
