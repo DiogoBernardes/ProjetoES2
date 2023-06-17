@@ -23,4 +23,7 @@ public partial class activity_info
     [ForeignKey("event_id")]
     [InverseProperty("activity_infos")]
     public virtual event_info _event { get; set; } = null!;
+
+    [InverseProperty("activity")]
+    public virtual ICollection<activity_participant> activity_participants { get; set; } = new List<activity_participant>();
 }

@@ -17,4 +17,7 @@ public partial class ticket_type
 
     [InverseProperty("ticket_type")]
     public virtual ICollection<event_regist> event_regists { get; set; } = new List<event_regist>();
+
+    [InverseProperty("ticket_typeNavigation")]
+    public virtual ICollection<event_ticket> event_tickets { get; set; } = new List<event_ticket>();
 }

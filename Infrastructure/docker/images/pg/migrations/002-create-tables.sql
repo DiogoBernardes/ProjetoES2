@@ -47,6 +47,7 @@ CREATE TABLE activity_info (
 );
 --Activity_participant table: This table have the information of the participants of a activity
 CREATE TABLE activity_participant(
+        id                  uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
         participant_id      uuid NOT NULL REFERENCES users(id),
         activity_id         uuid NOT NULL REFERENCES activity_info(id)
 );
@@ -58,6 +59,7 @@ CREATE TABLE ticket_type(
 
 --Event_Ticket Table: This table contains the quantity and price information of a certain type of tickets for a specific event
 CREATE TABLE event_ticket (
+        id                  uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
         ticket_type         uuid NOT NULL REFERENCES ticket_type(id),
         event_id            uuid NOT NULL REFERENCES event_info(id),
         quantity            INT NOT NULL,

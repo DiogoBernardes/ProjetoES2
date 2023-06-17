@@ -28,6 +28,9 @@ public partial class user
 
     public Guid role_id { get; set; }
 
+    [InverseProperty("participant")]
+    public virtual ICollection<activity_participant> activity_participants { get; set; } = new List<activity_participant>();
+
     [InverseProperty("organizer")]
     public virtual ICollection<event_info> event_infos { get; set; } = new List<event_info>();
 

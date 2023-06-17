@@ -62,11 +62,15 @@ public partial class ES2DbContext : DbContext
 
         modelBuilder.Entity<activity_participant>(entity =>
         {
-            entity.HasOne(d => d.activity).WithMany()
+            entity.HasKey(e => e.id).HasName("activity_participant_pkey");
+
+            entity.Property(e => e.id).HasDefaultValueSql("uuid_generate_v4()");
+
+            entity.HasOne(d => d.activity).WithMany(p => p.activity_participants)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("activity_participant_activity_id_fkey");
 
-            entity.HasOne(d => d.participant).WithMany()
+            entity.HasOne(d => d.participant).WithMany(p => p.activity_participants)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("activity_participant_participant_id_fkey");
         });
@@ -118,11 +122,15 @@ public partial class ES2DbContext : DbContext
 
         modelBuilder.Entity<event_ticket>(entity =>
         {
-            entity.HasOne(d => d._event).WithMany()
+            entity.HasKey(e => e.id).HasName("event_ticket_pkey");
+
+            entity.Property(e => e.id).HasDefaultValueSql("uuid_generate_v4()");
+
+            entity.HasOne(d => d._event).WithMany(p => p.event_tickets)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("event_ticket_event_id_fkey");
 
-            entity.HasOne(d => d.ticket_typeNavigation).WithMany()
+            entity.HasOne(d => d.ticket_typeNavigation).WithMany(p => p.event_tickets)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("event_ticket_ticket_type_fkey");
         });

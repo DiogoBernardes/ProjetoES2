@@ -40,6 +40,9 @@ public partial class event_info
     public virtual ICollection<event_regist> event_regists { get; set; } = new List<event_regist>();
 
     [InverseProperty("_event")]
+    public virtual ICollection<event_ticket> event_tickets { get; set; } = new List<event_ticket>();
+
+    [InverseProperty("_event")]
     public virtual ICollection<message> messages { get; set; } = new List<message>();
 
     [ForeignKey("organizer_id")]
