@@ -23,6 +23,9 @@ public partial class user
     [StringLength(100)]
     public string email { get; set; } = null!;
 
+    [StringLength(9)]
+    public string phone { get; set; } = null!;
+
     public Guid role_id { get; set; }
 
     [InverseProperty("organizer")]

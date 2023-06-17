@@ -7,9 +7,10 @@ VALUES ('Admin'),
        ('User');
 
 -- Insert initial data into the users table                                                                                                       
-INSERT INTO users (name, username, password,email,role_id)
+INSERT INTO users (name, username, password,email,phone,role_id)
 VALUES ('Diogo Bernardes', 
         'Bernardes_', 
         '123',
         'DiogoBernardes@ipvc.pt',
+        '935471697',
         (SELECT id FROM roles WHERE name = 'Admin' LIMIT 1));

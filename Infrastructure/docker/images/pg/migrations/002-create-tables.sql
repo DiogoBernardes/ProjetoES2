@@ -10,9 +10,13 @@ CREATE TABLE users (
         username            VARCHAR(100) NOT NULL,
         password            VARCHAR(100) NOT NULL,
         email               VARCHAR(100) NOT NULL,
+        phone               VARCHAR(9) NOT NULL,
         role_id             uuid NOT NULL REFERENCES roles(id)
 );
-
+CREATE TABLE event_category(
+        id                  uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+        name                VARCHAR(100) NOT NULL
+);
 --Event table: This table have the information of a event
 CREATE TABLE event_info (
         id                  uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -21,7 +25,8 @@ CREATE TABLE event_info (
         date_hour           TIMESTAMP WITH TIME ZONE NOT NULL,
         localization        VARCHAR(100) NOT NULL,
         description         VARCHAR(100) NOT NULL,
-        capacity            INT NOT NULL
+        capacity            INT NOT NULL,
+        category            uuid NOT NULL REFERENCES event_category(id)
 );
 
 --Message table: This table have the information of a message

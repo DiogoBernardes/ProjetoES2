@@ -23,6 +23,7 @@ namespace Backend.Repositories
                 Name = user.name,
                 Username = user.username,
                 Password = user.password,
+                Phone = user.phone,
                 Role = new RoleModel() {
                     ID = user.role_id,
                     Name = user.role.name
@@ -39,6 +40,7 @@ namespace Backend.Repositories
                 Name = user.name,
                 Username = user.username,
                 Password = user.password,
+                Phone = user.phone,
                 Role = new RoleModel()
                 {
                     ID = user.role.id,
@@ -52,6 +54,7 @@ namespace Backend.Repositories
                 password = entity.Password,
                 name = entity.Name,
                 username = entity.Username,
+                phone = entity.Phone,
                 role_id = entity.Role_id
             });
             await _context.SaveChangesAsync();
@@ -71,6 +74,7 @@ namespace Backend.Repositories
             existingUser.username = user.Username;
             existingUser.password = user.Password;
             existingUser.email = user.Email;
+            existingUser.phone = user.Phone;
             existingUser.role_id = user.Role_id;
 
             await _context.SaveChangesAsync();
@@ -96,6 +100,7 @@ namespace Backend.Repositories
                 Name = user.name,
                 Username = user.username,
                 Password = user.password,
+                Phone = user.phone,
                 Role = new RoleModel() {
                     ID = user.role.id,
                     Name = user.role.name

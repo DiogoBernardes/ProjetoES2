@@ -20,6 +20,8 @@ public partial class ES2DbContext : DbContext
 
     public virtual DbSet<activity_participant> activity_participants { get; set; }
 
+    public virtual DbSet<event_category> event_categories { get; set; }
+
     public virtual DbSet<event_info> event_infos { get; set; }
 
     public virtual DbSet<event_regist> event_regists { get; set; }
@@ -69,11 +71,22 @@ public partial class ES2DbContext : DbContext
                 .HasConstraintName("activity_participant_participant_id_fkey");
         });
 
+        modelBuilder.Entity<event_category>(entity =>
+        {
+            entity.HasKey(e => e.id).HasName("event_category_pkey");
+
+            entity.Property(e => e.id).HasDefaultValueSql("uuid_generate_v4()");
+        });
+
         modelBuilder.Entity<event_info>(entity =>
         {
             entity.HasKey(e => e.id).HasName("event_info_pkey");
 
             entity.Property(e => e.id).HasDefaultValueSql("uuid_generate_v4()");
+
+            entity.HasOne(d => d.categoryNavigation).WithMany(p => p.event_infos)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("event_info_category_fkey");
 
             entity.HasOne(d => d.organizer).WithMany(p => p.event_infos)
                 .OnDelete(DeleteBehavior.ClientSetNull)

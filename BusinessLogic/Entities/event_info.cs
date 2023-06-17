@@ -27,8 +27,14 @@ public partial class event_info
 
     public int capacity { get; set; }
 
+    public Guid category { get; set; }
+
     [InverseProperty("_event")]
     public virtual ICollection<activity_info> activity_infos { get; set; } = new List<activity_info>();
+
+    [ForeignKey("category")]
+    [InverseProperty("event_infos")]
+    public virtual event_category categoryNavigation { get; set; } = null!;
 
     [InverseProperty("_event")]
     public virtual ICollection<event_regist> event_regists { get; set; } = new List<event_regist>();
