@@ -16,7 +16,7 @@ public partial class event_regist
 
     public Guid participant_id { get; set; }
 
-    public DateOnly regist_date { get; set; }
+    public DateTime regist_date { get; set; }
 
     public Guid state_id { get; set; }
 

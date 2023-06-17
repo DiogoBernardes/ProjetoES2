@@ -1,7 +1,8 @@
-using Backend.Models;
 using Backend.Interface;
 using BusinessLogic.Context;
 using BusinessLogic.Entities;
+using BusinessLogic.Models;
+using BusinessLogic.Models.User;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Repositories

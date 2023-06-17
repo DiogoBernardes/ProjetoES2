@@ -3,8 +3,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Backend.Interface;
-using Backend.Models;
 using BusinessLogic.Context;
+using BusinessLogic.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -56,7 +56,7 @@ namespace Backend.Controllers
 
         private string GenerateJwtToken(string email)
         {
-            var user = _userRepository.GetUserByEmail(email).Result; // Obter o usuário com base no email
+            var user = _userRepository.GetUserByEmail(email).Result; // Obter o utilizador com base no email
 
             var claims = new List<Claim>
             {

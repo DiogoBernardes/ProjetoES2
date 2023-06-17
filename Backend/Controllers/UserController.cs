@@ -1,9 +1,9 @@
-using Backend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Backend.Interface;
 using System;
 using System.Threading.Tasks;
+using BusinessLogic.Models.User;
 
 namespace Backend.Controllers
 {

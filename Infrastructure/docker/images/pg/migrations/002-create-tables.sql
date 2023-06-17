@@ -18,8 +18,7 @@ CREATE TABLE event_info (
         id                  uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
         organizer_id        uuid NOT NULL REFERENCES users(id),
         name                VARCHAR(100) NOT NULL,
-        event_date          DATE NOT NULL,
-        event_hour          TIME NOT NULL,
+        date_hour           TIMESTAMP WITH TIME ZONE NOT NULL,
         localization        VARCHAR(100) NOT NULL,
         description         VARCHAR(100) NOT NULL,
         capacity            INT NOT NULL
@@ -70,7 +69,7 @@ CREATE TABLE event_regist (
         id                  uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
         event_id            uuid NOT NULL REFERENCES event_info(id),
         participant_id      uuid NOT NULL REFERENCES users(id),
-        regist_date         DATE NOT NULL,
+        regist_date         TIMESTAMP WITH TIME ZONE NOT NULL,
         state_id            uuid NOT NULL REFERENCES regist_state(id),
         ticket_type_id      uuid NOT NULL REFERENCES ticket_type(id)
 );

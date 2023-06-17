@@ -1,9 +1,9 @@
-using Backend.Models;
 using BusinessLogic.Entities;
 using System;
 using System.Collections.Generic;
 
 using System.Threading.Tasks;
+using BusinessLogic.Models.User;
 
 namespace Backend.Interface
 {

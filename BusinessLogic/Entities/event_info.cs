@@ -17,9 +17,7 @@ public partial class event_info
     [StringLength(100)]
     public string name { get; set; } = null!;
 
-    public DateOnly event_date { get; set; }
-
-    public TimeOnly event_hour { get; set; }
+    public DateTime date_hour { get; set; }
 
     [StringLength(100)]
     public string localization { get; set; } = null!;

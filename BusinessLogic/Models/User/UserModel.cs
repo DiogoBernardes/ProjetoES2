@@ -1,6 +1,4 @@
-using BusinessLogic.Entities;
-
-namespace Backend.Models;
+namespace BusinessLogic.Models.User;
 
 public class UserModel
 {
