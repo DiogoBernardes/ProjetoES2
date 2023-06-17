@@ -1,14 +1,14 @@
-using BusinessLogic.Entities;
-
 namespace Backend.Models;
 
-public class UserModel
+public class UpdateUserModel
 {
+    
     public Guid ID { get; set; }
     public string Name { get; set; }
     public string Username { get; set; }
     public string Password { get; set; }
     public string Email { get; set; }
-    public RoleModel Role { get; set; } 
-    
+    public Guid Role_id { get; set; }
+
+
 }

@@ -10,6 +10,6 @@ VALUES ('Admin'),
 INSERT INTO users (name, username, password,email,role_id)
 VALUES ('Diogo Bernardes', 
         'Bernardes_', 
-        SHA256('123'), --Sha256: segurança da informação e criptografia
+        '123',
         'DiogoBernardes@ipvc.pt',
         (SELECT id FROM roles WHERE name = 'Admin' LIMIT 1));

@@ -2,6 +2,6 @@ namespace Backend.Models;
 
 public class RoleModel
 {
-    public Guid id { get; set; }
+    public Guid ID { get; set; }
     public string Name { get; set; }
 }
