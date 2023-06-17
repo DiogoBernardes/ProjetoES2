@@ -19,13 +19,13 @@ public class EventRepository : IEventRepository
     public async Task<List<EventModel>> GetEvents() {
         return await _context.Set<event_info>().Select(eventInfo => new EventModel() {
             ID = eventInfo.id,
-            Organizer_ID = eventInfo.organizer.id,
             Organizer_Name = eventInfo.organizer.name,
             Name = eventInfo.name,
             Date_Hour = eventInfo.date_hour,
             Localization = eventInfo.localization,
             Description = eventInfo.description,
-            Capacity = eventInfo.capacity
+            Capacity = eventInfo.capacity,
+            Category = eventInfo.categoryNavigation.name
         }).ToListAsync();
     }
 
@@ -34,14 +34,14 @@ public class EventRepository : IEventRepository
         return _context.Set<event_info>().Select(eventInfo => new EventModel()
         {
             ID = eventInfo.id,
-            Organizer_ID = eventInfo.organizer.id,
             Organizer_Name = eventInfo.organizer.name,
             Name = eventInfo.name,
             Date_Hour = eventInfo.date_hour,
             Localization = eventInfo.localization,
             Description = eventInfo.description,
-            Capacity = eventInfo.capacity
-        }).FirstOrDefault(e => e.ID == id) ?? throw new InvalidOperationException("User not found!");
+            Capacity = eventInfo.capacity,
+            Category = eventInfo.categoryNavigation.name
+        }).FirstOrDefault(e => e.ID == id) ?? throw new InvalidOperationException("Event not found!");
     }
     public async Task<EventModel> CreateEvent(EventModel newEvent) {
         _context.Set<event_info>().Add(new event_info() {
@@ -50,7 +50,8 @@ public class EventRepository : IEventRepository
             date_hour = newEvent.Date_Hour,
             localization = newEvent.Localization,
             description = newEvent.Description,
-            capacity = newEvent.Capacity
+            capacity = newEvent.Capacity,
+            category = newEvent.Category_ID
         });
         await _context.SaveChangesAsync();
         return newEvent;
@@ -62,7 +63,7 @@ public class EventRepository : IEventRepository
 
         if (existingEvent == null)
         {
-            throw new ArgumentException("User not found");
+            throw new ArgumentException("Event not found");
         }
 
         existingEvent.name = newEvent.Name;
@@ -70,6 +71,7 @@ public class EventRepository : IEventRepository
         existingEvent.localization = newEvent.Localization;
         existingEvent.description = newEvent.Description;
         existingEvent.capacity = newEvent.Capacity;
+        existingEvent.category = newEvent.Category_ID;
 
         await _context.SaveChangesAsync();
     }
@@ -79,7 +81,7 @@ public class EventRepository : IEventRepository
 
          if (eventInfo == null)
          {
-             throw new ArgumentException("User not found");
+             throw new ArgumentException("Event not found");
          }
 
          _context.event_infos.Remove(eventInfo);

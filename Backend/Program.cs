@@ -60,6 +60,7 @@ builder.Services.AddAuthentication(options =>
 //dependencias/Serviços
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IEventRepository, EventRepository>();
+builder.Services.AddScoped<IEventCategoryRepository, EventCategoryRepository>();
 
 builder.Services.AddAuthorization();
 
