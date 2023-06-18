@@ -17,7 +17,7 @@ namespace Backend.Controllers
             _eventRepository = eventRepository;
         }
 
-        // GET: api/user
+        // GET: api/Event
         [HttpGet]
         [Authorize(Roles = "Admin, UserManager")]
         public async Task<IActionResult> GetEvents()
@@ -27,7 +27,7 @@ namespace Backend.Controllers
          
         }
 
-        // GET: api/user
+        // GET: api/Event
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin, UserManager")]
         public async Task<IActionResult> GetEvent(Guid id)
@@ -42,7 +42,7 @@ namespace Backend.Controllers
             return Ok(getEvent);
         }
 
-        // POST: api/user
+        // POST: api/Event
         [HttpPost]
         [Authorize(Roles = "Admin, UserManager,Users")]
         public async Task<IActionResult> CreateEvent([FromBody] EventModel newEvent)
@@ -56,7 +56,7 @@ namespace Backend.Controllers
             return BadRequest("Something went wrong!!");
         }
         
-        // PUT: api/user/{id}
+        // PUT: api/Event/{id}
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateUser(Guid id, [FromBody] EventModel updatedEvent)
@@ -72,7 +72,7 @@ namespace Backend.Controllers
         }
         
         
-        // DELETE: api/user/{id}
+        // DELETE: api/Event/{id}
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteEvent(Guid id)

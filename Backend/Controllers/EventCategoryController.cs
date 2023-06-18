@@ -16,7 +16,7 @@ public class EventCategoryController : ControllerBase
             _eventCategoryRepository = eventCategoryRepository;
         }
 
-        // GET: api/user
+        // GET: api/Category
         [HttpGet]
         [Authorize(Roles = "Admin, UserManager")]
         public async Task<IActionResult> GetCategories()
@@ -26,7 +26,7 @@ public class EventCategoryController : ControllerBase
          
         }
 
-        // GET: api/user
+        // GET: api/Category
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin, UserManager")]
         public async Task<IActionResult> GetCategory(Guid id)
@@ -41,7 +41,7 @@ public class EventCategoryController : ControllerBase
             return Ok(category);
         }
 
-        // POST: api/user
+        // POST: api/Category
         [HttpPost]
         [Authorize(Roles = "Admin, UserManager,Users")]
         public async Task<IActionResult> CreateCategory([FromBody] EventCategoryModel newCategory)
@@ -55,7 +55,7 @@ public class EventCategoryController : ControllerBase
             return BadRequest("Something went wrong!!");
         }
         
-        // PUT: api/user/{id}
+        // PUT: api/Category/{id}
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateUser(Guid id, [FromBody] EventCategoryModel updatedCategory)
@@ -71,7 +71,7 @@ public class EventCategoryController : ControllerBase
         }
         
         
-        // DELETE: api/user/{id}
+        // DELETE: api/Category/{id}
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteEvent(Guid id)

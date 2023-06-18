@@ -16,7 +16,7 @@ namespace Backend.Controllers
             _eventTicketRepository = eventTicketRepository;
         }
 
-        // GET: api/user
+        // GET: api/EventTicket
         [HttpGet]
         [Authorize(Roles = "Admin, UserManager")]
         public async Task<IActionResult> GetEventTickets()
@@ -26,7 +26,7 @@ namespace Backend.Controllers
 
         }
 
-        // GET: api/user
+        // GET: api/EventTicket
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin, UserManager")]
         public async Task<IActionResult> GetEventTicket(Guid id)
@@ -41,7 +41,7 @@ namespace Backend.Controllers
             return Ok(eventTicket);
         }
 
-        // POST: api/user
+        // POST: api/EventTicket
         [HttpPost]
         [Authorize(Roles = "Admin, UserManager,Users")]
         public async Task<IActionResult> CreateEventTicket([FromBody] EventTicketModel newEventTicket)
@@ -55,7 +55,7 @@ namespace Backend.Controllers
             return BadRequest("Something went wrong!!");
         }
 
-        // PUT: api/user/{id}
+        // PUT: api/EventTicket/{id}
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateEventTicket(Guid id, [FromBody] EventTicketModel updatedEventTicket)
@@ -71,7 +71,7 @@ namespace Backend.Controllers
         }
 
 
-        // DELETE: api/user/{id}
+        // DELETE: api/EventTicket/{id}
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteEventTicket(Guid id)
