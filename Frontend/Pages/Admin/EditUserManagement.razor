@@ -1,0 +1,116 @@
+@page "/EditUserManagement/{UserId}"
+@using Frontend.Models.User
+@using Blazored.LocalStorage
+@using System.Net.Http.Headers
+@using Frontend.Models
+@using Microsoft.AspNetCore.Components
+@inject HttpClient httpClient
+@inject ILocalStorageService localStorage
+@inject NavigationManager navigationManager
+
+<h3>Edit User</h3>
+
+@if (user != null)
+{
+    <form>
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" class="form-control" id="name" @bind="@user.Name">
+        </div>
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" class="form-control" id="username" @bind="@user.Username">
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" class="form-control" id="password" @bind="@user.Password">
+        </div>
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" class="form-control" id="email" @bind="@user.Email">
+        </div>
+        <div class="form-group">
+            <label for="phone">Phone</label>
+            <input type="text" class="form-control" id="phone" @bind="@user.Phone">
+        </div>
+        <div class="form-group">
+            <label for="role_id">Role</label>
+            <select class="form-control" id="role_id" @bind="@user.Role_id">
+                @foreach (var role in roles)
+                {
+                    <option value="@role.ID" selected="@IsSelectedRole(role)">@role.Name</option>
+                }
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary" @onclick="UpdateUser">Save</button>
+    </form>
+}
+else
+{
+    <p>Error fetching user details.</p>
+}
+
+@code {
+    private UpdateUserModel user;
+    private List<RoleModel> roles;
+
+    [Parameter]
+    public string UserId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetUserDetails();
+        await GetRoles();
+    }
+
+    private async Task GetUserDetails()
+    {
+        var token = await localStorage.GetItemAsync<string>("token");
+
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await httpClient.GetAsync($"http://localhost:5052/api/User/{UserId}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            user = await response.Content.ReadFromJsonAsync<UpdateUserModel>();
+        }
+    }
+
+    private async Task GetRoles()
+    {
+        var token = await localStorage.GetItemAsync<string>("token");
+
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await httpClient.GetAsync("http://localhost:5052/api/User/GetRoles");
+
+        if (response.IsSuccessStatusCode)
+        {
+            roles = await response.Content.ReadFromJsonAsync<List<RoleModel>>();
+        }
+    }
+
+    private bool IsSelectedRole(RoleModel role)
+    {
+        return role.ID == user.Role_id;
+    }
+
+    private async Task UpdateUser()
+    {
+        var token = await localStorage.GetItemAsync<string>("token");
+
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await httpClient.PutAsJsonAsync($"http://localhost:5052/api/User/{UserId}", user);
+
+        if (response.IsSuccessStatusCode)
+        {
+            navigationManager.NavigateTo("UserManagement", true);
+        }
+        else
+        {
+            Console.WriteLine("Failed to update user.");
+        }
+    }
+}

@@ -1,0 +1,104 @@
+@page "/UserManagement"
+@using Frontend.Models.User
+@using Blazored.LocalStorage
+@using System.Net.Http.Headers
+@inject HttpClient httpClient
+@inject ILocalStorageService localStorage
+@inject NavigationManager navigationManager
+@inject IJSRuntime jsRuntime
+
+<h3>UserManagement</h3>
+
+@if (users != null)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in users)
+            {
+                <tr>
+                    <td>@user.ID</td>
+                    <td>@user.Name</td>
+                    <td>@user.Username</td>
+                    <td>@user.Email</td>
+                    <td>@user.Phone</td>
+                    <td><button class="btn btn-primary" @onclick="() => EditUser(user)">Edit</button></td>
+                    <td><button class="btn btn-danger" @onclick="() => RemoveUser(user)">Remove</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Error fetching users.</p>
+}
+
+<button class="btn btn-success" @onclick="CreateUser">Create User</button>
+
+@code {
+    private List<UserModel> users;
+    private UserModel userToEdit;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ListAllUsers();
+    }
+
+    private async Task ListAllUsers()
+    {
+        var token = await localStorage.GetItemAsync<string>("token");
+
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await httpClient.GetAsync("http://localhost:5052/api/User/GetAll");
+
+        if (response.IsSuccessStatusCode)
+        {
+            users = await response.Content.ReadFromJsonAsync<List<UserModel>>();
+        }
+    }
+
+    private void EditUser(UserModel user)
+    {
+        userToEdit = user;
+        navigationManager.NavigateTo($"/EditUserManagement/{user.ID}", true);
+    }
+
+    private async Task RemoveUser(UserModel user)
+    {
+        var confirmed = await jsRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to remove user {user.Name}?");
+
+        if (confirmed)
+        {
+            var token = await localStorage.GetItemAsync<string>("token");
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await httpClient.DeleteAsync($"http://localhost:5052/api/User/{user.ID}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                await ListAllUsers();
+            }
+            else
+            {
+                Console.WriteLine("Failed to remove user.");
+            }
+        }
+    }
+
+    private void CreateUser()
+    {
+        navigationManager.NavigateTo("CreateUserManagement", true);
+    }
+}
