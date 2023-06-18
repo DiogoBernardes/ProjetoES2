@@ -1,0 +1,28 @@
+﻿@page "/Admin"
+@using Blazored.LocalStorage
+@using System.IdentityModel.Tokens.Jwt
+@using System.Security.Claims
+
+@inject ILocalStorageService localStorage
+
+<PageTitle>Admin</PageTitle>
+
+<h1>Welcome, @UserName!</h1>
+
+@code {
+
+    private string UserName { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var token = await localStorage.GetItemAsync<string>("token");
+        if (!string.IsNullOrEmpty(token))
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var jwtToken = tokenHandler.ReadJwtToken(token);
+
+            var userNameClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name);
+            UserName = userNameClaim?.Value;
+        }
+    }
+}

@@ -1,0 +1,107 @@
+﻿@page "/"
+@using Blazored.LocalStorage
+@using Frontend.Models
+@using System.IdentityModel.Tokens.Jwt
+@using System.Security.Claims
+
+@inject ILocalStorageService localStorage
+
+<h3>Login</h3>
+
+<div class="login-container">
+    <div class="form-group">
+        <label for="username">Email:</label>
+        <input id="username" class="form-control" @bind="Email" />
+    </div>
+
+    <div class="form-group">
+        <label for="password">Password:</label>
+        <input id="password" class="form-control" type="password" @bind="Password" />
+    </div>
+
+    <div class="form-group">
+        <button class="btn btn-primary" @onclick="HandleLoginAsync">Login</button>
+    </div>
+
+    <div class="form-group">
+        <p>Don't have an account? <a href="/Register">Register here</a></p>
+    </div>
+</div>
+
+@code {
+    private string Email { get; set; }
+    private string Password { get; set; }
+
+    [Inject]
+    private NavigationManager navigationManager { get; set; }
+
+    [Inject]
+    private HttpClient httpClient { get; set; }
+
+    private async Task HandleLoginAsync()
+    {
+        var loginModel = new AuthenticationModel
+        {
+            Email = Email,
+            Password = Password
+        };
+
+        var response = await httpClient.PostAsJsonAsync("http://localhost:5052/api/Authentication/token", loginModel);
+
+        // Código de autenticação do login
+
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<AuthenticationResponseModel>();
+            
+            if (result != null && !string.IsNullOrEmpty(result.Token))
+            {
+                await localStorage.SetItemAsync("token", result.Token);
+
+                // Redirecionar com base na role
+                var role = GetRoleFromToken(result.Token);
+                switch (role)
+                {
+                    case "Admin":
+                        navigationManager.NavigateTo("/Admin", true);
+                        break;
+                    case "UserManager":
+                        navigationManager.NavigateTo("/userManager", true);
+                        break;
+                    case "User":
+                        navigationManager.NavigateTo("/user", true);
+                        break;
+                    default:
+                        Console.WriteLine("Invalid role.");
+                        break;
+                }
+            }
+            else
+            {
+                Console.WriteLine("Failed to retrieve token from the response.");
+            }
+        }
+        else
+        {
+            Console.WriteLine("Authentication failed: " + response.StatusCode);
+        }
+    }
+
+    private string GetRoleFromToken(string token)
+    {
+        // Extrair a role do token JWT
+        var handler = new JwtSecurityTokenHandler();
+        var decodedToken = handler.ReadJwtToken(token);
+
+        // Obter a reivindicação de role do token
+        var roleClaim = decodedToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
+        
+        if (roleClaim != null)
+        {
+            return roleClaim.Value;
+        }
+
+        return string.Empty;
+    }
+    
+}

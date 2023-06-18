@@ -1,6 +1,13 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@using Blazored.LocalStorage
+@using System.IdentityModel.Tokens.Jwt
+@using System.Security.Claims
+
+@inject ILocalStorageService localStorage
+@inject NavigationManager navigationManager
+
+<div class="navbar navbar-expand @NavMenuCssClass">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">Frontend</a>
+        <a class="navbar-brand" href="">Menu</a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -9,26 +16,53 @@
 
 <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
     <nav class="flex-column">
-        <div class="nav-item px-3">
+        
+     <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                 <span class="oi oi-home" aria-hidden="true"></span> Home
             </NavLink>
         </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="oi oi-plus" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="fetchdata">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
-            </NavLink>
-        </div>
+
+        @if (UserIsAdmin)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="UserManagement">
+                    <span class="oi oi-person" aria-hidden="true"></span> User Management
+                </NavLink>
+            </div>
+        }
+
+        @if (UserIsUserManager)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="userManager">
+                    <span class="oi oi-people" aria-hidden="true"></span> User Manager
+                </NavLink>
+            </div>
+        }
+
+        @if (UserIsUser)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="user">
+                    <span class="oi oi-person" aria-hidden="true"></span> User
+                </NavLink>
+            </div>
+        }
     </nav>
+</div>
+
+<div class="navbar fixed-bottom align-items-center @NavMenuCssClass">
+    <div class="container-fluid justify-content-start">
+        <a class="navbar-brand" href="" @onclick="HandleLogoutAsync">Logout</a>
+    </div>
 </div>
 
 @code {
     private bool collapseNavMenu = true;
+    private bool UserIsAdmin { get; set; }
+    private bool UserIsUserManager { get; set; }
+    private bool UserIsUser { get; set; }
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
@@ -37,4 +71,26 @@
         collapseNavMenu = !collapseNavMenu;
     }
 
+    protected override async Task OnInitializedAsync()
+    {
+        var token = await localStorage.GetItemAsync<string>("token");
+        if (!string.IsNullOrEmpty(token))
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var jwtToken = tokenHandler.ReadJwtToken(token);
+
+            var roleClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
+            var role = roleClaim?.Value;
+
+            UserIsAdmin = role == "Admin";
+            UserIsUserManager = role == "UserManager";
+            UserIsUser = role == "User";
+        }
+    }
+
+    private async Task HandleLogoutAsync()
+    {
+        await localStorage.RemoveItemAsync("token");
+        navigationManager.NavigateTo("/", true);
+    }
 }
