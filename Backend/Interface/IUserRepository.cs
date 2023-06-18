@@ -17,6 +17,8 @@ namespace Backend.Interface
         Task DeleteUser(Guid id);
         Task<UserModel?> GetUserByEmail(string email);
         Task<List<RoleModel>> GetRole();
+        Task<UserModel?> GetUserByPhone(string phone);
+        Task<UserModel?> GetUserByUsername(string username);
       
     }
 }

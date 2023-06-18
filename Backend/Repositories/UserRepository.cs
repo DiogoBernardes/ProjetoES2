@@ -16,16 +16,19 @@ namespace Backend.Repositories
             _context = context;
         }
 
-        public async Task<List<UserModel>> GetUsers() {
-            return await _context.Set<user>().Select(user => new UserModel() {
+        public async Task<List<UserModel>> GetUsers()
+        {
+            return await _context.Set<user>().Select(user => new UserModel()
+            {
                 ID = user.id,
                 Email = user.email,
                 Name = user.name,
                 Username = user.username,
                 Password = user.password,
                 Phone = user.phone,
-                Role = new RoleModel() {
-                    ID = user.role_id,
+                Role = new RoleModel()
+                {
+                    ID = user.role.id,
                     Name = user.role.name
                 }
             }).ToListAsync();
@@ -48,8 +51,11 @@ namespace Backend.Repositories
                 }
             }).FirstOrDefault(u => u.ID == id) ?? throw new InvalidOperationException("User not found!");
         }
-        public async Task<UserModel> CreateUser(CreateUserModel entity) {
-            _context.Set<user>().Add(new user() {
+
+        public async Task<UserModel> CreateUser(CreateUserModel entity)
+        {
+            _context.Set<user>().Add(new user()
+            {
                 email = entity.Email,
                 password = entity.Password,
                 name = entity.Name,
@@ -60,7 +66,7 @@ namespace Backend.Repositories
             await _context.SaveChangesAsync();
             return await GetUserByEmail(entity.Email);
         }
-        
+
         public async Task UpdateUser(UpdateUserModel user)
         {
             var existingUser = await _context.users.FirstOrDefaultAsync(u => u.id == user.ID);
@@ -92,25 +98,65 @@ namespace Backend.Repositories
             _context.users.Remove(user);
             await _context.SaveChangesAsync();
         }
-        
-        public async Task<UserModel?> GetUserByEmail(string email) {
-            return _context.Set<user>().Select(user => new UserModel() {
+
+        public async Task<UserModel?> GetUserByEmail(string email)
+        {
+            return _context.Set<user>().Select(user => new UserModel()
+            {
                 ID = user.id,
                 Email = user.email,
                 Name = user.name,
                 Username = user.username,
                 Password = user.password,
                 Phone = user.phone,
-                Role = new RoleModel() {
+                Role = new RoleModel()
+                {
                     ID = user.role.id,
                     Name = user.role.name
                 }
             }).FirstOrDefault(u => u.Email.Equals(email));
         }
 
+        public async Task<UserModel?> GetUserByPhone(string phone)
+        {
+            return _context.Set<user>().Select(user => new UserModel()
+            {
+                ID = user.id,
+                Email = user.email,
+                Name = user.name,
+                Username = user.username,
+                Password = user.password,
+                Phone = user.phone,
+                Role = new RoleModel()
+                {
+                    ID = user.role.id,
+                    Name = user.role.name
+                }
+            }).FirstOrDefault(u => u.Phone.Equals(phone));
+        }
+
+        public async Task<UserModel?> GetUserByUsername(string username)
+        {
+            return _context.Set<user>().Select(user => new UserModel()
+            {
+                ID = user.id,
+                Email = user.email,
+                Name = user.name,
+                Username = user.username,
+                Password = user.password,
+                Phone = user.phone,
+                Role = new RoleModel()
+                {
+                    ID = user.role.id,
+                    Name = user.role.name
+                }
+            }).FirstOrDefault(u => u.Username.Equals(username));
+        }
+
         public async Task<List<RoleModel>> GetRole()
         {
-            return await _context.Set<role>().Select(role => new RoleModel() {
+            return await _context.Set<role>().Select(role => new RoleModel()
+            {
                 ID = role.id,
                 Name = role.name
             }).ToListAsync();
