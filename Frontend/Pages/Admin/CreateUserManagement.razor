@@ -3,6 +3,8 @@
 @using Blazored.LocalStorage
 @using Frontend.Models
 @using System.Net.Http.Headers
+@using System.Security.Claims
+@using System.IdentityModel.Tokens.Jwt
 @inject HttpClient httpClient
 @inject ILocalStorageService localStorage
 @inject NavigationManager navigationManager
@@ -36,12 +38,20 @@
 
 <div class="form-group">
     <label for="role">Role:</label>
-    <select id="role" class="form-control" @bind="newUser.Role_id">
-        @foreach (var role in roles)
-        {
-            <option value="@role.ID">@role.Name</option>
-        }
-    </select>
+    @if (UserIsUserManager)
+    {
+        <input id="role" class="form-control" disabled value="User" />
+        newUser.Role_id = new Guid("b4b09d22-77c4-4587-bf32-35620f1cc320");
+    }
+    else if(UserIsAdmin)
+    {
+        <select id="role" class="form-control" @bind="newUser.Role_id">
+            @foreach (var role in roles)
+            {
+                <option value="@role.ID">@role.Name</option>
+            }
+        </select>
+    }
 </div>
 
 <div class="form-group">
@@ -51,10 +61,13 @@
 @code {
     private CreateUserModel newUser = new CreateUserModel();
     private List<RoleModel> roles;
-
+    private bool UserIsAdmin;
+    private bool UserIsUserManager;
+    
     protected override async Task OnInitializedAsync()
     {
         await GetRoles();
+        await CheckUserRole();
     }
 
     private async Task GetRoles()
@@ -67,6 +80,23 @@
         if (response.IsSuccessStatusCode)
         {
             roles = await response.Content.ReadFromJsonAsync<List<RoleModel>>();
+        }
+    }
+    
+
+    private async Task CheckUserRole()
+    {
+        var token = await localStorage.GetItemAsync<string>("token");
+        if (!string.IsNullOrEmpty(token))
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var jwtToken = tokenHandler.ReadJwtToken(token);
+
+            var roleClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
+            var role = roleClaim?.Value;
+
+            UserIsAdmin = role == "Admin";
+            UserIsUserManager = role == "UserManager";
         }
     }
 

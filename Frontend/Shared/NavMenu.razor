@@ -7,7 +7,7 @@
 
 <div class="navbar navbar-expand @NavMenuCssClass">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">Menu</a>
+        <a class="navbar-brand" href="">Menu @role</a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -19,24 +19,27 @@
         
         @if (UserIsAdmin)
         {
+           
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="UserManagement">
-                    <span class="oi oi-person" aria-hidden="true"></span> User Management
+                    <span class="oi oi-person" aria-hidden="true"></span> User Management 
                 </NavLink>
             </div>
         }
 
         @if (UserIsUserManager)
         {
+            
             <div class="nav-item px-3">
-                <NavLink class="nav-link" href="userManager">
-                    <span class="oi oi-people" aria-hidden="true"></span> User Manager
+                <NavLink class="nav-link" href="UserManagement">
+                    <span class="oi oi-person" aria-hidden="true"></span> User Management 
                 </NavLink>
             </div>
         }
 
         @if (UserIsUser)
         {
+           
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="user">
                     <span class="oi oi-person" aria-hidden="true"></span> User
@@ -57,7 +60,7 @@
     private bool UserIsAdmin { get; set; }
     private bool UserIsUserManager { get; set; }
     private bool UserIsUser { get; set; }
-
+    private string role = string.Empty;
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
     private void ToggleNavMenu()
@@ -74,7 +77,7 @@
             var jwtToken = tokenHandler.ReadJwtToken(token);
 
             var roleClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
-            var role = roleClaim?.Value;
+            role = roleClaim?.Value;
 
             UserIsAdmin = role == "Admin";
             UserIsUserManager = role == "UserManager";
