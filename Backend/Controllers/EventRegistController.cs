@@ -63,7 +63,8 @@ namespace Backend.Controllers
                 {
                     return BadRequest("The event organizer cannot be an attendee!");
                 }
-
+                
+                // Verifica se o Participante já está inscrito no evento
                 int participantRegist = await _context.Set<event_regist>()
                     .CountAsync(regist => regist.event_id == newRegist.Event_ID && regist.participant_id == newRegist.Participant_ID);
 
@@ -116,7 +117,7 @@ namespace Backend.Controllers
             {
                 return BadRequest("The event organizer cannot be an attendee!");
             }
-
+            // Verifica se o Participante já está inscrito no evento
             int participantRegist = await _context.Set<event_regist>()
                 .CountAsync(regist => regist.event_id == updatedRegist.Event_ID && regist.participant_id == updatedRegist.Participant_ID);
 
