@@ -10,5 +10,4 @@ public class CreateUserModel
     public string Phone { get; set; }
     public Guid Role_id { get; set; }
 
-
 }

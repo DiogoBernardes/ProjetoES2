@@ -107,5 +107,13 @@ namespace Backend.Repositories
                 }
             }).FirstOrDefault(u => u.Email.Equals(email));
         }
+
+        public async Task<List<RoleModel>> GetRole()
+        {
+            return await _context.Set<role>().Select(role => new RoleModel() {
+                ID = role.id,
+                Name = role.name
+            }).ToListAsync();
+        }
     }
 }

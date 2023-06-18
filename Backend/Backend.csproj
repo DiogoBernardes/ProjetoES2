@@ -28,6 +28,7 @@
 
     <ItemGroup>
       <Compile Remove="Controllers\AuthorsController.cs" />
+      <Compile Remove="Controllers\RoleController.cs" />
     </ItemGroup>
 
 </Project>

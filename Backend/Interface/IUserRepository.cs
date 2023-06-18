@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 
 using System.Threading.Tasks;
+using BusinessLogic.Models;
 using BusinessLogic.Models.User;
 
 namespace Backend.Interface
@@ -15,6 +16,7 @@ namespace Backend.Interface
         Task UpdateUser(UpdateUserModel user);
         Task DeleteUser(Guid id);
         Task<UserModel?> GetUserByEmail(string email);
+        Task<List<RoleModel>> GetRole();
       
     }
 }

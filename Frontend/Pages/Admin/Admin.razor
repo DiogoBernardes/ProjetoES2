@@ -9,8 +9,9 @@
 
 <h1>Welcome, @UserName!</h1>
 
-@code {
 
+@code {
+    private int currentCount = 0;
     private string UserName { get; set; }
 
     protected override async Task OnInitializedAsync()
@@ -25,4 +26,5 @@
             UserName = userNameClaim?.Value;
         }
     }
+    
 }

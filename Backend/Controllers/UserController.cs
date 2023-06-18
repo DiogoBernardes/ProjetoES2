@@ -19,7 +19,7 @@ namespace Backend.Controllers
         }
 
         // GET: api/user
-        [HttpGet]
+        [HttpGet("GetAll")]
         [Authorize(Roles = "Admin, UserManager")]
         public async Task<IActionResult> GetUsers()
         {
@@ -79,6 +79,16 @@ namespace Backend.Controllers
             await _userRepository.DeleteUser(id);
 
             return NoContent();
+        }
+        
+                
+        // GET: api/user
+        [HttpGet("GetRoles")]
+        [Authorize(Roles = "Admin, UserManager")]
+        public async Task<IActionResult> GetRole()
+        {
+            var roles = await _userRepository.GetRole();
+            return Ok(roles);
         }
     }
 }
