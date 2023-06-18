@@ -62,6 +62,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IEventCategoryRepository, EventCategoryRepository>();
 builder.Services.AddScoped<IEventTicketRepository, EventTicketRepository>();
+builder.Services.AddScoped<IEventRegistRepository, EventRegistRepository>();
 
 builder.Services.AddAuthorization();
 
