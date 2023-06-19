@@ -10,6 +10,8 @@
 
 <h3>Organized Event Page</h3>
 
+<button class="btn btn-success" @onclick="CreateEvent">Create Event</button>
+
 @if (events != null && events.Count > 0)
 {
     <table class="table">
@@ -22,6 +24,7 @@
                 <th>Description</th>
                 <th>Capacity</th>
                 <th>Category</th>
+                <th></th>
                 <th></th>
                 <th></th>
             </tr>
@@ -39,21 +42,55 @@
                     <td>@evt.Category.Name</td>
                     <td><button class="btn btn-primary" @onclick="() => EditEvent(evt)">Edit</button></td>
                     <td><button class="btn btn-danger" @onclick="() => RemoveEvent(evt)">Remove</button></td>
+                    <td><button class="btn btn-info" @onclick="() => ShowTicketInfo(evt)">Tickets</button></td>
                 </tr>
             }
         </tbody>
     </table>
+
+    @if (showTicketTable)
+    {
+        <h4>Ticket Information</h4>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Event Name</th>
+                    <th>Ticket Type</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th></th>
+                 
+                   
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ticket in selectedEvent.Tickets)
+                {
+                    <tr>
+                        <td>@selectedEvent.Name</td>
+                        <td>@ticket.TicketType.Name</td>
+                        <td>@ticket.Quantity</td>
+                        <td>@ticket.Price</td>
+                        <td><button class="btn btn-primary" >Edit</button>
+                        <button class="btn btn-danger">Remove</button></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <button class="btn btn-success">Add Ticket </button>
+        <button class="btn btn-secondary" @onclick="HideTicketTable">Close</button>
+    }
 }
 else
 {
     <p>No events organized by the user.</p>
 }
 
-<button class="btn btn-success" @onclick="CreateEvent">Create Event</button>
-
 @code {
     private List<EventModel> events;
     private EventModel eventToEdit;
+    private EventModel selectedEvent;
+    private bool showTicketTable = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -77,7 +114,7 @@ else
             events = allEvents.Where(evt => evt.Organizer_ID == userId).ToList();
         }
     }
-    
+
     private async Task<Guid> CurrentUserId()
     {
         var token = await localStorage.GetItemAsync<string>("token");
@@ -123,6 +160,17 @@ else
                 Console.WriteLine("Failed to remove event.");
             }
         }
+    }
+
+    private void ShowTicketInfo(EventModel evt)
+    {
+        selectedEvent = evt;
+        showTicketTable = true;
+    }
+
+    private void HideTicketTable()
+    {
+        showTicketTable = false;
     }
 
     private void CreateEvent()

@@ -1,5 +1,6 @@
 using Backend.Interface;
 using BusinessLogic.Models.Event;
+using BusinessLogic.Models.Event.ticket;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -39,6 +40,15 @@ namespace Backend.Controllers
             }
 
             return Ok(eventTicket);
+        }
+        
+        // GET: api/EventTicket/GetEventTicketsByEvent/{eventId}
+        [HttpGet("GetEventTicketsByEvent/{eventId}")]
+        [Authorize(Roles = "Admin, UserManager")]
+        public async Task<IActionResult> GetEventTicketsByEvent(Guid eventId)
+        {
+            var eventTickets = await _eventTicketRepository.GetEventTicketsByEvent(eventId);
+            return Ok(eventTickets);
         }
 
         // POST: api/EventTicket

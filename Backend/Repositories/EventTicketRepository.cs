@@ -2,6 +2,7 @@ using Backend.Interface;
 using BusinessLogic.Context;
 using BusinessLogic.Entities;
 using BusinessLogic.Models.Event;
+using BusinessLogic.Models.Event.ticket;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Repositories;
@@ -19,11 +20,15 @@ public class EventTicketRepository : IEventTicketRepository
         return await _context.Set<event_ticket>().Select(eventTicket => new EventTicketModel() {
             ID = eventTicket.id,
             TicketType_ID = eventTicket.ticket_type,
-            TicketType_name = eventTicket.ticket_typeNavigation.name,
             Event_ID = eventTicket.event_id,
             Event_name = eventTicket._event.name,
             Quantity = eventTicket.quantity,
-            Price = eventTicket.price
+            Price = eventTicket.price,
+            TicketType =  new TicketTypeModel()
+            {
+                ID = eventTicket.ticket_typeNavigation.id,
+                Name = eventTicket.ticket_typeNavigation.name
+            },
         }).ToListAsync();
     }
 
@@ -33,13 +38,37 @@ public class EventTicketRepository : IEventTicketRepository
         {
             ID = eventTicket.id,
             TicketType_ID = eventTicket.ticket_type,
-            TicketType_name = eventTicket.ticket_typeNavigation.name,
             Event_ID = eventTicket.event_id,
             Event_name = eventTicket._event.name,
             Quantity = eventTicket.quantity,
-            Price = eventTicket.price
+            Price = eventTicket.price,
+            TicketType =  new TicketTypeModel()
+            {
+            ID = eventTicket.ticket_typeNavigation.id,
+            Name = eventTicket.ticket_typeNavigation.name
+        },
         }).FirstOrDefault(c => c.ID == id) ?? throw new InvalidOperationException("Event Ticket not found!");
     }
+    public async Task<List<EventTicketModel>> GetEventTicketsByEvent(Guid eventId)
+    {
+        return await _context.Set<event_ticket>()
+            .Where(eventTicket => eventTicket.event_id == eventId)
+            .Select(eventTicket => new EventTicketModel()
+            {
+                ID = eventTicket.id,
+                TicketType_ID = eventTicket.ticket_type,
+                Event_ID = eventTicket.event_id,
+                Event_name = eventTicket._event.name,
+                Quantity = eventTicket.quantity,
+                Price = eventTicket.price,
+                TicketType = new TicketTypeModel()
+                {
+                    ID = eventTicket.ticket_typeNavigation.id,
+                    Name = eventTicket.ticket_typeNavigation.name
+                },
+            }).ToListAsync();
+    }
+
     
     
     public async Task<EventTicketModel> CreateEventTicket(EventTicketModel newEventTicket) {

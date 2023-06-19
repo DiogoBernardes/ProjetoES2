@@ -2,6 +2,8 @@ using Backend.Interface;
 using BusinessLogic.Context;
 using BusinessLogic.Entities;
 using BusinessLogic.Models.Event;
+using BusinessLogic.Models.Event.ticket;
+using BusinessLogic.Models.User;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -19,7 +21,6 @@ public class EventRepository : IEventRepository
     public async Task<List<EventModel>> GetEvents() {
         return await _context.Set<event_info>().Select(eventInfo => new EventModel() {
             ID = eventInfo.id,
-            Organizer_Name = eventInfo.organizer.name,
             Name = eventInfo.name,
             Date_Hour = eventInfo.date_hour,
             Localization = eventInfo.localization,
@@ -29,7 +30,19 @@ public class EventRepository : IEventRepository
             {
                 ID = eventInfo.categoryNavigation.id,
                 Name = eventInfo.categoryNavigation.name
-            }
+            },
+            Organizer = new UserModel(){
+                Name = eventInfo.organizer.name
+            },
+            Tickets = eventInfo.event_tickets.Select(ticket => new EventTicketModel()
+            {
+                TicketType = new TicketTypeModel()
+                {
+                    Name = ticket.ticket_typeNavigation.name
+                },
+                Quantity = ticket.quantity,
+                Price = ticket.price
+            }).ToList()
         }).ToListAsync();
     }
 
@@ -38,7 +51,6 @@ public class EventRepository : IEventRepository
         return _context.Set<event_info>().Select(eventInfo => new EventModel()
         {
             ID = eventInfo.id,
-            Organizer_Name = eventInfo.organizer.name,
             Name = eventInfo.name,
             Date_Hour = eventInfo.date_hour,
             Localization = eventInfo.localization,
@@ -48,11 +60,22 @@ public class EventRepository : IEventRepository
             {
                 ID = eventInfo.categoryNavigation.id,
                 Name = eventInfo.categoryNavigation.name
-            }
+            },
+            Organizer = new UserModel(){
+                Name = eventInfo.organizer.name
+            },
+            Tickets = eventInfo.event_tickets.Select(ticket => new EventTicketModel()
+            {
+                TicketType = new TicketTypeModel()
+                {
+                    Name = ticket.ticket_typeNavigation.name
+                },
+                Quantity = ticket.quantity,
+                Price = ticket.price
+            }).ToList()
         }).FirstOrDefault(e => e.ID == id) ?? throw new InvalidOperationException("Event not found!");
     }
     public async Task<CreateEventModel> CreateEvent(CreateEventModel newEvent) {
-    
         _context.Set<event_info>().Add(new event_info() {
             organizer_id = newEvent.Organizer_ID,
             name = newEvent.Name,

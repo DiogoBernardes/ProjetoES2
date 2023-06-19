@@ -1,3 +1,5 @@
+using Frontend.Models.Event.Ticket;
+
 namespace Frontend.Models.Event;
 
 public class EventModel
@@ -12,4 +14,5 @@ public class EventModel
     public int Capacity { get; set; } 
     public EventCategoryModel Category { get; set; }
     public string Organizer_Name { get; set; }
+    public List<EventTicketModel> Tickets { get; set; }
 }
