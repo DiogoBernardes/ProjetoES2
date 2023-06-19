@@ -66,7 +66,7 @@ namespace Backend.Controllers
         // PUT: api/Event/{id}
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin,UserManager,Users")]
-        public async Task<IActionResult> UpdateEvent(Guid id, [FromBody] EventModel updatedEvent)
+        public async Task<IActionResult> UpdateEvent(Guid id, [FromBody] UpdateEventModel updatedEvent)
         { 
             if (id != updatedEvent.ID)
             {

@@ -40,8 +40,15 @@
     <label for="role">Role:</label>
     @if (UserIsUserManager)
     {
-        <input id="role" class="form-control" disabled value="User" />
-        newUser.Role_id = new Guid("b4b09d22-77c4-4587-bf32-35620f1cc320");
+        <select id="role" class="form-control" @bind="newUser.Role_id">
+            @foreach (var role in roles)
+            {
+                if (role.Name == "User")
+                {
+                    <option value="@role.ID">@role.Name</option>
+                }
+            }
+        </select>
     }
     else if(UserIsAdmin)
     {

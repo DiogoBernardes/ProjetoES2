@@ -8,7 +8,7 @@ public interface IEventRepository
     Task<EventModel> GetEvent(Guid id);
     Task<CreateEventModel> CreateEvent(CreateEventModel newEntity);
     
-    Task UpdateEvent(EventModel newEntity);
+    Task UpdateEvent(UpdateEventModel newEntity);
     Task<int> DeleteEvent(Guid id);
 
 }

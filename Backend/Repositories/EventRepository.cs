@@ -66,7 +66,7 @@ public class EventRepository : IEventRepository
         return newEvent;
     }
     
-    public async Task UpdateEvent(EventModel newEvent)
+    public async Task UpdateEvent(UpdateEventModel newEvent)
     {
         var existingEvent = await _context.event_infos.FirstOrDefaultAsync(u => u.id == newEvent.ID);
 

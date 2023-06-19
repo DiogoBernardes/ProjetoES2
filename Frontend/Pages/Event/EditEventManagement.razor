@@ -1,0 +1,154 @@
+@page "/EditEventManagement/{EventId}"
+@using Frontend.Models.Event
+@using Blazored.LocalStorage
+@using System.Net.Http.Headers
+@using System.Security.Claims
+@using Frontend.Models.User
+@using System.IdentityModel.Tokens.Jwt
+@inject HttpClient httpClient
+@inject ILocalStorageService localStorage
+@inject NavigationManager navigationManager
+
+<h3>Edit Event</h3>
+
+@if (eventToEdit != null)
+{
+    <form>
+        <div class="form-group">
+            <label for="organizerId">Organizer</label>
+            <input id="organizerId" class="form-control" type="text" readonly @bind="@eventToEdit.Organizer_ID" />
+        </div>
+
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" class="form-control" id="name" @bind="@eventToEdit.Name">
+        </div>
+        <div class="form-group">
+            <label for="date">Date and Time</label>
+            <input type="datetime-local" class="form-control" id="date" @bind="@eventToEdit.Date_Hour">
+        </div>
+        <div class="form-group">
+            <label for="localization">Localization</label>
+            <input type="text" class="form-control" id="localization" @bind="@eventToEdit.Localization">
+        </div>
+        <div class="form-group">
+            <label for="description">Description</label>
+            <textarea class="form-control" id="description" rows="3" @bind="@eventToEdit.Description"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="capacity">Capacity</label>
+            <input type="number" class="form-control" id="capacity" @bind="@eventToEdit.Capacity">
+        </div>
+        <div class="form-group">
+            <label for="category">Category</label>
+            <select class="form-control" id="category" @bind="@eventToEdit.Category_ID">
+                @foreach (var category in categories)
+                {
+                    <option value="@category.ID" selected="@IsSelectedCategory(category)">@category.Name</option>
+                }
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary" @onclick="UpdateEvent">Save</button>
+    </form>
+}
+else
+{
+    <p>Error fetching event details.</p>
+}
+
+@code {
+    private UpdateEventModel eventToEdit;
+    private List<EventCategoryModel> categories;
+    private Guid userId;
+    private string token;
+    private string userEmail;
+    [Parameter]
+    public string EventId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetEventDetails();
+        await GetCategories();
+        token = await localStorage.GetItemAsync<string>("token");
+
+    // Decodificar o token e extrair as informações do usuário
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var decodedToken = tokenHandler.ReadJwtToken(token);
+
+    // Extrair o email do usuário
+        userEmail = decodedToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+
+    // Obter o ID do usuário com base no email
+        userId = await GetUserIdByEmail(userEmail);
+
+    // Atribuir o valor do userId ao Organizer_ID
+        eventToEdit.Organizer_ID = userId;
+    }
+
+    private async Task GetEventDetails()
+    {
+        var token = await localStorage.GetItemAsync<string>("token");
+
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await httpClient.GetAsync($"http://localhost:5052/api/Event/{EventId}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            eventToEdit = await response.Content.ReadFromJsonAsync<UpdateEventModel>();
+            eventToEdit.Organizer_ID = eventToEdit.Organizer_ID; // Mantém o Organizer_ID original
+        }
+    }
+
+    private async Task GetCategories()
+    {
+        var token = await localStorage.GetItemAsync<string>("token");
+
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await httpClient.GetAsync("http://localhost:5052/api/EventCategory/GetCategories");
+
+        if (response.IsSuccessStatusCode)
+        {
+            categories = await response.Content.ReadFromJsonAsync<List<EventCategoryModel>>();
+        }
+    }
+
+    private bool IsSelectedCategory(EventCategoryModel category)
+    {
+        return category.ID == eventToEdit.Category_ID;
+    }
+
+    private async Task<Guid> GetUserIdByEmail(string email)
+    {
+        var response = await httpClient.GetAsync($"http://localhost:5052/api/User/GetUserByEmail/{email}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var user = await response.Content.ReadFromJsonAsync<UserModel>();
+            if (user != null)
+            {
+                return user.ID;
+            }
+        }
+
+        return Guid.Empty;
+    }
+    private async Task UpdateEvent()
+    {
+        var token = await localStorage.GetItemAsync<string>("token");
+
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await httpClient.PutAsJsonAsync($"http://localhost:5052/api/Event/{EventId}", eventToEdit);
+
+        if (response.IsSuccessStatusCode)
+        {
+            navigationManager.NavigateTo("/OrganizedEventPage", true);
+        }
+        else
+        {
+            Console.WriteLine("Failed to update event.");
+        }
+    }
+}

@@ -72,13 +72,12 @@ else
         {
             var allEvents = await response.Content.ReadFromJsonAsync<List<EventModel>>();
 
-    // Filtra os eventos em que o organizador é o usuário logado
+            // Filtra os eventos em que o organizador é o usuário logado
             var userId = await CurrentUserId();
             events = allEvents.Where(evt => evt.Organizer_ID == userId).ToList();
         }
     }
     
-
     private async Task<Guid> CurrentUserId()
     {
         var token = await localStorage.GetItemAsync<string>("token");

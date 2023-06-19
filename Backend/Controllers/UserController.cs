@@ -44,7 +44,7 @@ namespace Backend.Controllers
 
         // POST: api/user
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,UserManager")]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserModel newUser)
         {
             if (ModelState.IsValid)
@@ -119,7 +119,7 @@ namespace Backend.Controllers
         
         // PUT: api/user/{id}
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,UserManager")]
         public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UpdateUserModel updatedUser)
         {
             if (id != updatedUser.ID)
@@ -162,7 +162,7 @@ namespace Backend.Controllers
 
         // DELETE: api/user/{id}
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,UserManager")]
         public async Task<IActionResult> DeleteUser(Guid id)
         {
             await _userRepository.DeleteUser(id);
