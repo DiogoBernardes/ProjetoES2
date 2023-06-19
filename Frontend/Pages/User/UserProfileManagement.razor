@@ -1,0 +1,119 @@
+@page "/user"
+@using Frontend.Models.User
+@using Blazored.LocalStorage
+@using System.Net.Http.Headers
+@using System.IdentityModel.Tokens.Jwt
+@using System.Security.Claims
+@inject HttpClient httpClient
+@inject ILocalStorageService localStorage
+@inject NavigationManager navigationManager
+@inject IJSRuntime jsRuntime
+
+<h3>Profile</h3>
+
+@if (userProfile != null)
+{
+    <div>
+        <p><strong>Name:</strong> @userProfile.Name</p>
+        <p><strong>Email:</strong> @userProfile.Email</p>
+        <p><strong>Username:</strong> @userProfile.Username</p>
+        <p><strong>Phone:</strong> @userProfile.Phone</p>
+
+        <h4>Edit Profile</h4>
+        <div>
+            <label for="name">Name:</label>
+            <input id="name" type="text" @bind="@userModel.Name" />
+        </div>
+        <div>
+            <label for="email">Email:</label>
+            <input id="email" type="email" @bind="@userModel.Email" />
+        </div>
+        <div>
+            <label for="username">Username:</label>
+            <input id="username" type="text" @bind="@userModel.Username" />
+        </div>
+        <div>
+            <label for="password">Password:</label>
+            <input id="password" type="text" @bind="@userModel.Password" />
+        </div>
+        <div>
+            <label for="phone">Phone:</label>
+            <input id="phone" type="text" @bind="@userModel.Phone" />
+        </div>
+        <button @onclick="UpdateUser">Save</button>
+    </div>
+}
+else
+{
+    <p>No user profile available.</p>
+}
+
+@code {
+    private UserModel userProfile;
+    private UserModel userModel;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        var token = await localStorage.GetItemAsync<string>("token");
+
+        // Decodificar o token e extrair as informações do usuário
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var decodedToken = tokenHandler.ReadJwtToken(token);
+
+        // Extrair o email do usuário
+        var userEmail = decodedToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+
+        // Obter o perfil do usuário
+        userProfile = await GetUserProfile(userEmail);
+        
+        // Inicializar o objeto UserModel auxiliar com os valores atuais do perfil do usuário
+        userModel = new UserModel
+        {
+            Name = userProfile.Name,
+            Email = userProfile.Email,
+            Username = userProfile.Username,
+            Phone = userProfile.Phone,
+            Password = userProfile.Password,
+            ID = userProfile.ID
+        };
+    }
+
+    private async Task<UserModel> GetUserProfile(string email)
+    {
+        var token = await localStorage.GetItemAsync<string>("token");
+
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await httpClient.GetAsync($"http://localhost:5052/api/User/GetUserByEmail/{email}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var user = await response.Content.ReadFromJsonAsync<UserModel>();
+            return user;
+        }
+
+        return null;
+    }
+
+    private async Task UpdateUser()
+    {
+        var token = await localStorage.GetItemAsync<string>("token");
+
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await httpClient.PutAsJsonAsync($"http://localhost:5052/api/User/{userProfile.ID}", userModel);
+
+        if (response.IsSuccessStatusCode)
+        {
+            // Atualização bem-sucedida, exibir mensagem de sucesso
+            await jsRuntime.InvokeVoidAsync("alert", "User updated successfully!");
+        }
+        else
+        {
+            // Ocorreu um erro durante a atualização, exibir mensagem de erro
+            await jsRuntime.InvokeVoidAsync("alert", "An error occurred while updating the user.");
+        }
+    }
+}

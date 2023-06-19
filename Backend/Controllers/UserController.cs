@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Backend.Interface;
 using System;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using BusinessLogic.Models.User;
 
@@ -16,7 +17,7 @@ namespace Backend.Controllers
         public UserController(IUserRepository userRepository)
         {
             _userRepository = userRepository;
-        }
+        }   
 
         // GET: api/user
         [HttpGet("GetAll")]
@@ -29,7 +30,7 @@ namespace Backend.Controllers
 
         // GET: api/user
         [HttpGet("{id}")]
-        [Authorize(Roles = "Admin, UserManager")]
+        [Authorize(Roles = "Admin, UserManager, User")]
         public async Task<IActionResult> GetUser(Guid id)
         {
             var user = await _userRepository.GetUser(id);
@@ -119,7 +120,7 @@ namespace Backend.Controllers
         
         // PUT: api/user/{id}
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin,UserManager")]
+        [Authorize(Roles = "Admin,UserManager, User")]
         public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UpdateUserModel updatedUser)
         {
             if (id != updatedUser.ID)
@@ -182,11 +183,16 @@ namespace Backend.Controllers
         
         // GET: api/user
         [HttpGet("GetUserByEmail/{email}")]
-        [Authorize(Roles = "Admin, UserManager")]
+        [Authorize(Roles = "Admin, UserManager, User")]
         public async Task<IActionResult> GetUserByEmail(string email)
         {
             var user = await _userRepository.GetUserByEmail(email);
             return Ok(user);
         }
+        
+        
+
+        
+
     }
 }
