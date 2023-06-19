@@ -1,0 +1,194 @@
+@page "/EventManagementAdmin"
+@using Frontend.Models.Event
+@using Blazored.LocalStorage
+@using System.Net.Http.Headers
+@using System.IdentityModel.Tokens.Jwt
+@inject HttpClient httpClient
+@inject ILocalStorageService localStorage
+@inject NavigationManager navigationManager
+@inject IJSRuntime jsRuntime
+
+<h3>Event Management (Admin)</h3>
+
+@if (events != null && events.Count > 0)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Organizer Name</th>
+                <th>Name</th>
+                <th>Date/Time</th>
+                <th>Localization</th>
+                <th>Description</th>
+                <th>Capacity</th>
+                <th>Category</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var evt in events)
+            {
+                <tr>
+                    <td>@evt.ID</td>
+                    <td>@evt.Organizer_Name</td>
+                    <td>@evt.Name</td>
+                    <td>@evt.Date_Hour</td>
+                    <td>@evt.Localization</td>
+                    <td>@evt.Description</td>
+                    <td>@evt.Capacity</td>
+                    <td>@evt.Category.Name</td>
+                    <td><button class="btn btn-primary" @onclick="() => EditEvent(evt)">Edit</button></td>
+                    <td><button class="btn btn-danger" @onclick="() => RemoveEvent(evt)">Remove</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No events available.</p>
+}
+
+@if (eventToEdit != null)
+{
+    <h4>Edit Event</h4>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="edit-name">Name</label>
+                <input id="edit-name" class="form-control" @bind="@eventToEdit.Name" />
+            </div>
+            <div class="form-group">
+                <label for="edit-date">Date/Time</label>
+                <input id="edit-date" class="form-control" type="datetime-local" @bind="@eventToEdit.Date_Hour" />
+            </div>
+            <div class="form-group">
+                <label for="edit-localization">Localization</label>
+                <input id="edit-localization" class="form-control" @bind="@eventToEdit.Localization" />
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="edit-description">Description</label>
+                <textarea id="edit-description" class="form-control" @bind="@eventToEdit.Description"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="edit-capacity">Capacity</label>
+                <input id="edit-capacity" class="form-control" type="number" @bind="@eventToEdit.Capacity" />
+            </div>
+            <div class="form-group">
+                <label for="edit-category">Category</label>
+                <select id="edit-category" class="form-control" @bind="@eventToEdit.Category_ID">
+                    @foreach (var category in categories)
+                    {
+                        <option value="@category.ID">@category.Name</option>
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <button class="btn btn-success" @onclick="SaveEvent">Save</button>
+            <button class="btn btn-secondary" @onclick="CancelEdit">Cancel</button>
+        </div>
+    </div>
+}
+
+@code {
+    private List<EventModel> events;
+    private List<EventCategoryModel> categories;
+    private EventModel eventToEdit;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        await ListEvents();
+        await LoadCategories();
+    }
+
+    private async Task ListEvents()
+    {
+        var token = await localStorage.GetItemAsync<string>("token");
+
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await httpClient.GetAsync("http://localhost:5052/api/Event");
+
+        if (response.IsSuccessStatusCode)
+        {
+            events = await response.Content.ReadFromJsonAsync<List<EventModel>>();
+        }
+    }
+
+    private async Task LoadCategories()
+    {
+        var token = await localStorage.GetItemAsync<string>("token");
+
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await httpClient.GetAsync("http://localhost:5052/api/EventCategory/GetCategories");
+
+        if (response.IsSuccessStatusCode)
+        {
+            categories = await response.Content.ReadFromJsonAsync<List<EventCategoryModel>>();
+        }
+    }
+
+    private void EditEvent(EventModel evt)
+    {
+        eventToEdit = evt;
+    }
+
+    private async Task SaveEvent()
+    {
+        var token = await localStorage.GetItemAsync<string>("token");
+
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await httpClient.PutAsJsonAsync($"http://localhost:5052/api/Event/{eventToEdit.ID}", eventToEdit);
+
+        if (response.IsSuccessStatusCode)
+        {
+            await LoadData();
+            eventToEdit = null;
+        }
+        else
+        {
+            Console.WriteLine("Failed to save event.");
+        }
+    }
+
+    private void CancelEdit()
+    {
+        eventToEdit = null;
+    }
+
+    private async Task RemoveEvent(EventModel evt)
+    {
+        var confirmed = await jsRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to remove event {evt.Name}?");
+
+        if (confirmed)
+        {
+            var token = await localStorage.GetItemAsync<string>("token");
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await httpClient.DeleteAsync($"http://localhost:5052/api/Event/{evt.ID}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadData();
+            }
+            else
+            {
+                Console.WriteLine("Failed to remove event.");
+            }
+        }
+    }
+}
