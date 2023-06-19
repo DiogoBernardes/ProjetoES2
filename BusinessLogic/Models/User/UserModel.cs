@@ -1,3 +1,5 @@
+
+
 namespace BusinessLogic.Models.User;
 
 public class UserModel

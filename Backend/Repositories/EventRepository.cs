@@ -25,7 +25,11 @@ public class EventRepository : IEventRepository
             Localization = eventInfo.localization,
             Description = eventInfo.description,
             Capacity = eventInfo.capacity,
-            Category = eventInfo.categoryNavigation.name
+            Category = new EventCategoryModel()
+            {
+                ID = eventInfo.categoryNavigation.id,
+                Name = eventInfo.categoryNavigation.name
+            }
         }).ToListAsync();
     }
 
@@ -40,10 +44,15 @@ public class EventRepository : IEventRepository
             Localization = eventInfo.localization,
             Description = eventInfo.description,
             Capacity = eventInfo.capacity,
-            Category = eventInfo.categoryNavigation.name
+            Category = new EventCategoryModel()
+            {
+                ID = eventInfo.categoryNavigation.id,
+                Name = eventInfo.categoryNavigation.name
+            }
         }).FirstOrDefault(e => e.ID == id) ?? throw new InvalidOperationException("Event not found!");
     }
-    public async Task<EventModel> CreateEvent(EventModel newEvent) {
+    public async Task<CreateEventModel> CreateEvent(CreateEventModel newEvent) {
+    
         _context.Set<event_info>().Add(new event_info() {
             organizer_id = newEvent.Organizer_ID,
             name = newEvent.Name,
@@ -89,4 +98,6 @@ public class EventRepository : IEventRepository
 
          return _context.SaveChangesAsync().Result;
     }
+    
+  
 }

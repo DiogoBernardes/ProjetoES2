@@ -17,8 +17,8 @@ public class EventCategoryController : ControllerBase
         }
 
         // GET: api/Category
-        [HttpGet]
-        [Authorize(Roles = "Admin, UserManager")]
+        [HttpGet("GetCategories")]
+        [Authorize(Roles = "Admin, UserManager,User")]
         public async Task<IActionResult> GetCategories()
         {
             var categories = await _eventCategoryRepository.GetCategories();

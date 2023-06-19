@@ -56,17 +56,24 @@ namespace Backend.Controllers
 
         private string GenerateJwtToken(string email)
         {
-            var user = _userRepository.GetUserByEmail(email).Result; // Obter o utilizador com base no email
+            var user = _userRepository.GetUserByEmail(email).Result;
 
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, email)
+                new Claim(ClaimTypes.Email, email)
             };
 
             if (user != null && user.Role != null)
             {
-                claims.Add(new Claim(ClaimTypes.Role, user.Role.Name)); // Adicionar a reivindicação de função (role) ao token
+                claims.Add(new Claim(ClaimTypes.Role, user.Role.Name));
             }
+            if (user != null)
+            {
+                var userIdClaim = new Claim("UserId", user.ID.ToString(), ClaimValueTypes.String, _configuration["JwtSettings:Issuer"]);
+                claims.Add(userIdClaim);
+            }
+
+
 
             string? secretKey = _configuration["JwtSettings:SecretKey"];
             if (secretKey != null)
@@ -90,6 +97,7 @@ namespace Backend.Controllers
                 throw new Exception("A chave secreta não está configurada.");
             }
         }
+
 
     }
 }

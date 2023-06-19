@@ -1,0 +1,133 @@
+@page "/OrganizedEventPage"
+@using Frontend.Models.Event
+@using Blazored.LocalStorage
+@using System.Net.Http.Headers
+@using System.IdentityModel.Tokens.Jwt
+@inject HttpClient httpClient
+@inject ILocalStorageService localStorage
+@inject NavigationManager navigationManager
+@inject IJSRuntime jsRuntime
+
+<h3>Organized Event Page</h3>
+
+@if (events != null && events.Count > 0)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Date/Time</th>
+                <th>Localization</th>
+                <th>Description</th>
+                <th>Capacity</th>
+                <th>Category</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var evt in events)
+            {
+                <tr>
+                    <td>@evt.ID</td>
+                    <td>@evt.Name</td>
+                    <td>@evt.Date_Hour</td>
+                    <td>@evt.Localization</td>
+                    <td>@evt.Description</td>
+                    <td>@evt.Capacity</td>
+                    <td>@evt.Category.Name</td>
+                    <td><button class="btn btn-primary" @onclick="() => EditEvent(evt)">Edit</button></td>
+                    <td><button class="btn btn-danger" @onclick="() => RemoveEvent(evt)">Remove</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No events organized by the user.</p>
+}
+
+<button class="btn btn-success" @onclick="CreateEvent">Create Event</button>
+
+@code {
+    private List<EventModel> events;
+    private EventModel eventToEdit;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ListOrganizedEvents();
+    }
+
+    private async Task ListOrganizedEvents()
+    {
+        var token = await localStorage.GetItemAsync<string>("token");
+
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await httpClient.GetAsync("http://localhost:5052/api/Event");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var allEvents = await response.Content.ReadFromJsonAsync<List<EventModel>>();
+
+    // Filtra os eventos em que o organizador é o usuário logado
+            var userId = await CurrentUserId();
+            events = allEvents.Where(evt => evt.Organizer_ID == userId).ToList();
+        }
+    }
+    
+
+    private async Task<Guid> CurrentUserId()
+    {
+        var token = await localStorage.GetItemAsync<string>("token");
+
+        if (!string.IsNullOrEmpty(token))
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var decodedToken = handler.ReadJwtToken(token);
+            var userIdClaim = decodedToken.Claims.FirstOrDefault(claim => claim.Type == "sub");
+
+            if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out var userId))
+            {
+                return userId;
+            }
+        }
+
+        return Guid.Empty;
+    }
+
+    private void EditEvent(EventModel evt)
+    {
+        eventToEdit = evt;
+        navigationManager.NavigateTo($"/EditEventManagement/{evt.ID}", true);
+    }
+
+    private async Task RemoveEvent(EventModel evt)
+    {
+        var confirmed = await jsRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to remove event {evt.Name}?");
+
+        if (confirmed)
+        {
+            var token = await localStorage.GetItemAsync<string>("token");
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await httpClient.DeleteAsync($"http://localhost:5052/api/Event/{evt.ID}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                await ListOrganizedEvents();
+            }
+            else
+            {
+                Console.WriteLine("Failed to remove event.");
+            }
+        }
+    }
+
+    private void CreateEvent()
+    {
+        navigationManager.NavigateTo("CreateEventManagement", true);
+    }
+}

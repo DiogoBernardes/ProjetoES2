@@ -26,11 +26,19 @@
     <div class="form-group">
         <p>Don't have an account? <a href="/Register">Register here</a></p>
     </div>
+
+    @if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <div class="alert alert-danger">
+            @ErrorMessage
+        </div>
+    }
 </div>
 
 @code {
     private string Email { get; set; }
     private string Password { get; set; }
+    private string ErrorMessage { get; set; }
 
     [Inject]
     private NavigationManager navigationManager { get; set; }
@@ -53,7 +61,7 @@
         if (response.IsSuccessStatusCode)
         {
             var result = await response.Content.ReadFromJsonAsync<AuthenticationResponseModel>();
-            
+
             if (result != null && !string.IsNullOrEmpty(result.Token))
             {
                 await localStorage.SetItemAsync("token", result.Token);
@@ -72,18 +80,18 @@
                         navigationManager.NavigateTo("/Index", true);
                         break;
                     default:
-                        Console.WriteLine("Invalid role.");
+                        ErrorMessage = "Invalid role.";
                         break;
                 }
             }
             else
             {
-                Console.WriteLine("Failed to retrieve token from the response.");
+                ErrorMessage = "Failed to retrieve token from the response.";
             }
         }
         else
         {
-            Console.WriteLine("Authentication failed: " + response.StatusCode);
+            ErrorMessage = "Authentication failed: " + response.StatusCode;
         }
     }
 
@@ -95,7 +103,7 @@
 
         // Obter a reivindicação de role do token
         var roleClaim = decodedToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
-        
+
         if (roleClaim != null)
         {
             return roleClaim.Value;
@@ -103,5 +111,4 @@
 
         return string.Empty;
     }
-    
 }

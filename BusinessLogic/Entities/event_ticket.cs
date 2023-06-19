@@ -19,7 +19,7 @@ public partial class event_ticket
     public int quantity { get; set; }
 
     [Precision(10, 2)]
-    public float price { get; set; }
+    public decimal price { get; set; }
 
     [ForeignKey("event_id")]
     [InverseProperty("event_tickets")]

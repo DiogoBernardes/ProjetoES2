@@ -179,5 +179,14 @@ namespace Backend.Controllers
             var roles = await _userRepository.GetRole();
             return Ok(roles);
         }
+        
+        // GET: api/user
+        [HttpGet("GetUserByEmail/{email}")]
+        [Authorize(Roles = "Admin, UserManager")]
+        public async Task<IActionResult> GetUserByEmail(string email)
+        {
+            var user = await _userRepository.GetUserByEmail(email);
+            return Ok(user);
+        }
     }
 }

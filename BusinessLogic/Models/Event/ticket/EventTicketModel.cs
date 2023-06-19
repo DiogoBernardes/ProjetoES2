@@ -8,6 +8,6 @@ public class EventTicketModel
     public Guid Event_ID { get; set; }
     public string Event_name { get; set; }
     public int Quantity { get; set; }
-    public float Price { get; set; }
+    public decimal Price { get; set; }
 
 }

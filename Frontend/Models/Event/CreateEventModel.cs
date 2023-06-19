@@ -1,8 +1,7 @@
 namespace Frontend.Models.Event;
 
-public class EventModel
+public class CreateEventModel
 {
-    public Guid ID { get; set; }
     public Guid Organizer_ID { get; set; }
     public Guid Category_ID { get; set; }
     public string Name { get; set; }
@@ -10,6 +9,7 @@ public class EventModel
     public string Localization { get; set; }
     public string Description { get; set; }
     public int Capacity { get; set; } 
-    public EventCategoryModel Category { get; set; }
-    public string Organizer_Name { get; set; }
-}
+   
+}    
+
+

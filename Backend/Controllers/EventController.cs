@@ -19,7 +19,7 @@ namespace Backend.Controllers
 
         // GET: api/Event
         [HttpGet]
-        [Authorize(Roles = "Admin, UserManager")]
+        [Authorize(Roles = "Admin, UserManager,Users")]
         public async Task<IActionResult> GetEvents()
         {
             var getEvents = await _eventRepository.GetEvents();
@@ -29,7 +29,7 @@ namespace Backend.Controllers
 
         // GET: api/Event
         [HttpGet("{id}")]
-        [Authorize(Roles = "Admin, UserManager")]
+        [Authorize(Roles = "Admin,UserManager,Users")]
         public async Task<IActionResult> GetEvent(Guid id)
         {
             var getEvent = await _eventRepository.GetEvent(id);
@@ -43,10 +43,17 @@ namespace Backend.Controllers
         }
 
         // POST: api/Event
-        [HttpPost]
-        [Authorize(Roles = "Admin, UserManager,Users")]
-        public async Task<IActionResult> CreateEvent([FromBody] EventModel newEvent)
+        [HttpPost("add")]
+        [Authorize(Roles = "Admin,UserManager,Users")]
+        public async Task<IActionResult> CreateEvent([FromBody] CreateEventModel newEvent)
         {
+            DateTime nowPlus10Minutes = DateTime.Now.AddMinutes(10);
+
+            if (newEvent.Date_Hour < nowPlus10Minutes)
+            {
+                return BadRequest("The event date cannot be earlier than the current day plus 10 minutes.");
+            }
+
             if (ModelState.IsValid)
             {
                 var createdEvent = await _eventRepository.CreateEvent(newEvent);
@@ -58,8 +65,8 @@ namespace Backend.Controllers
         
         // PUT: api/Event/{id}
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> UpdateUser(Guid id, [FromBody] EventModel updatedEvent)
+        [Authorize(Roles = "Admin,UserManager,Users")]
+        public async Task<IActionResult> UpdateEvent(Guid id, [FromBody] EventModel updatedEvent)
         { 
             if (id != updatedEvent.ID)
             {
@@ -74,7 +81,7 @@ namespace Backend.Controllers
         
         // DELETE: api/Event/{id}
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,UserManager,Users")]
         public async Task<IActionResult> DeleteEvent(Guid id)
         {
             int eventDeletedId = await _eventRepository.DeleteEvent(id);
@@ -86,7 +93,7 @@ namespace Backend.Controllers
             
             return NoContent();
         }
-        
+    
               
     }
 }
