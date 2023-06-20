@@ -31,6 +31,26 @@ public class EventRegistRepository : IEventRegistRepository
         }).ToListAsync();
     }
 
+    public async Task<List<EventRegistModel>> GetAllRegistsOnEvent(Guid id)
+    {
+        return await _context.Set<event_regist>()
+            .Where(eventRegist => eventRegist.event_id == id)
+            .Select(eventRegist => new EventRegistModel()
+            {
+                ID = eventRegist.id,
+                Event_ID = eventRegist.event_id,
+                Event_Name = eventRegist._event.name,
+                Participant_ID = eventRegist.participant_id,
+                Participant_Name = eventRegist.participant.name,
+                State_ID = eventRegist.state_id,
+                State_Name = eventRegist.state.state,
+                Ticket_Type_ID = eventRegist.ticket_type_id,
+                Ticket_Type_Name = eventRegist.ticket_type.name,
+                Regist_Date = eventRegist.regist_date
+            })
+            .ToListAsync();
+    }
+
     public async Task<EventRegistModel> GetEventRegist(Guid id)
     {
         return _context.Set<event_regist>().Select(eventRegist => new EventRegistModel()
@@ -46,6 +66,14 @@ public class EventRegistRepository : IEventRegistRepository
             Ticket_Type_Name = eventRegist.ticket_type.name,
             Regist_Date = eventRegist.regist_date
         }).FirstOrDefault(e => e.ID == id) ?? throw new InvalidOperationException("Registration not found!");
+    }
+    
+    public async Task<List<Guid>> GetEventRegistIdsByEvent(Guid eventId)
+    {
+        return await _context.Set<event_regist>()
+            .Where(eventRegist => eventRegist.event_id == eventId)
+            .Select(eventRegist => eventRegist.id)
+            .ToListAsync();
     }
     
     public async Task<EventRegistModel> CreateEventRegist(EventRegistModel newRegistration) {

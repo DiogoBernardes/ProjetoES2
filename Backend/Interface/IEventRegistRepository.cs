@@ -10,4 +10,6 @@ public interface IEventRegistRepository
     
     Task UpdateEventRegist(EventRegistModel newEntity);
     Task<int> DeleteEventRegist(Guid id);
+    Task<List<Guid>> GetEventRegistIdsByEvent(Guid eventId);
+    Task<List<EventRegistModel>> GetAllRegistsOnEvent(Guid id);
 }

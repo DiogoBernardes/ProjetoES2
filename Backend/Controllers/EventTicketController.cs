@@ -56,7 +56,7 @@ namespace Backend.Controllers
         // POST: api/EventTicket
         [HttpPost]
         [Authorize(Roles = "Admin, UserManager,User")]
-        public async Task<IActionResult> CreateEventTicket([FromBody] EventTicketModel newEventTicket)
+        public async Task<IActionResult> CreateEventTicket([FromBody] CreateEventTicketModel newEventTicket)
 
         {
             if (ModelState.IsValid)

@@ -17,36 +17,38 @@
 {
     <table class="table">
         <thead>
-            <tr>
-                <th>Name</th>
-                <th>Date/Time</th>
-                <th>Localization</th>
-                <th>Description</th>
-                <th>Capacity</th>
-                <th>Category</th>
-                <th></th>
-                <th></th>
-                <th></th>
-            </tr>
+        <tr>
+            <th>Name</th>
+            <th>Date/Time</th>
+            <th>Localization</th>
+            <th>Description</th>
+            <th>Capacity</th>
+            <th>Category</th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+        </tr>
         </thead>
         <tbody>
-            @foreach (var evt in events)
-            {
-                <tr>
-                    <td>@evt.Name</td>
-                    <td>@evt.Date_Hour</td>
-                    <td>@evt.Localization</td>
-                    <td>@evt.Description</td>
-                    <td>@evt.Capacity</td>
-                    <td>@evt.Category.Name</td>
-                    <td><button class="btn btn-primary" @onclick="() => EditEvent(evt)">Edit</button></td>
-                    <td><button class="btn btn-danger" @onclick="() => RemoveEvent(evt)">Remove</button></td>
-                    <td><button class="btn btn-info" @onclick="() => GetTicketsFromEvent(evt.ID)">Tickets</button></td>
-                </tr>
-            }
+        @foreach (var evt in events)
+        {
+            <tr>
+                <td>@evt.Name</td>
+                <td>@evt.Date_Hour</td>
+                <td>@evt.Localization</td>
+                <td>@evt.Description</td>
+                <td>@evt.Capacity</td>
+                <td>@evt.Category.Name</td>
+                <td><button class="btn btn-primary" @onclick="() => EditEvent(evt)">Edit</button></td>
+                <td><button class="btn btn-danger" @onclick="() => RemoveEvent(evt)">Remove</button></td>
+                <td><button class="btn btn-info" @onclick="() => GetTicketsFromEvent(evt.ID)">Tickets</button></td>
+                <td><button class="btn btn-dark" @onclick="() => GetEventRegistrations(evt.ID)">Participants</button></td>
+            </tr>
+        }
         </tbody>
     </table>
-
+}
     @if (showTicketTable)
     {
         <h4>Ticket Information</h4>
@@ -112,19 +114,48 @@
         <button class="btn btn-success" @onclick="AddTicket">Add Ticket</button>
         <button class="btn btn-secondary" @onclick="HideTicketTable">Close</button>
     }
+   
+    @if (showParticipantsTable)
+    {
+        <h4>Participants Information</h4>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Registration Date</th>
+                    <th>Ticket Type</th>
+                    <th>State</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var regist in eventRegistrations)
+                {
+                    <tr>
+                        <td>@regist.Participant_Name</td>
+                        <td>@regist.Regist_Date</td>
+                        <td>@regist.Ticket_Type_Name</td>
+                        <td>@regist.State_Name</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <button class="btn btn-secondary" @onclick="HideParticipantTable">Close</button>
+ 
 }
-else
-{
-    <p>No events organized by the user.</p>
-}
+
 
 @code {
     private List<EventModel> events;
     private List<EventTicketModel> eventTickets;
+    private List<EventRegistModel> eventRegistrations;
     private EventModel eventToEdit;
     private EventModel selectedEvent;
     private bool showTicketTable = false;
+    private bool showParticipantsTable = false;
     private EventTicketModel editingTicket;
+    private Guid selectedRegistrationId;
+    private EventRegistModel selectedRegistration;
 
     protected override async Task OnInitializedAsync()
     {
@@ -143,9 +174,23 @@ else
         {
             var allEvents = await response.Content.ReadFromJsonAsync<List<EventModel>>();
 
-            // Filtra os eventos em que o organizador é o utilizador logado
+            // Filter the events where the organizer is the logged-in user
             var userId = await CurrentUserId();
             events = allEvents.Where(evt => evt.Organizer_ID == userId).ToList();
+        }
+    }
+ 
+    private async Task GetEventRegistrations(Guid eventId)
+    {
+        var token = await localStorage.GetItemAsync<string>("token");
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await httpClient.GetAsync($"http://localhost:5052/api/EventRegist/api/EventRegistration/GetAllRegistsOnEvent/{eventId}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            eventRegistrations = await response.Content.ReadFromJsonAsync<List<EventRegistModel>>();
+            showParticipantsTable = true;
         }
     }
 
@@ -183,6 +228,7 @@ else
         }
     }
 
+
     private void EditEvent(EventModel evt)
     {
         eventToEdit = evt;
@@ -214,6 +260,11 @@ else
     private void HideTicketTable()
     {
         showTicketTable = false;
+    }
+
+    private void HideParticipantTable()
+    {
+        showParticipantsTable = false;
     }
 
     private async Task RemoveTicket(EventTicketModel ticket)

@@ -23,7 +23,7 @@ namespace Backend.Controllers
 
         // GET: api/EventsRegist
         [HttpGet]
-        [Authorize(Roles = "Admin, UserManager")]
+        [Authorize(Roles = "Admin, UserManager,User")]
         public async Task<IActionResult> GetEventsRegist()
         {
             var getRegists = await _eventRegistRepository.GetEventsRegist();
@@ -31,9 +31,15 @@ namespace Backend.Controllers
          
         }
 
+        [HttpGet("api/EventRegistration/GetAllRegistsOnEvent/{id}")]
+        public async Task<List<EventRegistModel>> GetAllRegistsOnEvent(Guid id)
+        {
+            return await _eventRegistRepository.GetAllRegistsOnEvent(id);
+        }
+        
         // GET: api/EventRegist
         [HttpGet("{id}")]
-        [Authorize(Roles = "Admin, UserManager")]
+        [Authorize(Roles = "Admin, UserManager,User")]
         public async Task<IActionResult> GetEventRegist(Guid id)
         {
             var getRegist = await _eventRegistRepository.GetEventRegist(id);
@@ -45,10 +51,19 @@ namespace Backend.Controllers
 
             return Ok(getRegist);
         }
+        
+        // GET: api/EventRegist/GetEventRegistByEvent/{eventId}
+        [HttpGet("GetEventRegistByEvent/{eventId}")]
+        [Authorize(Roles = "Admin, UserManager")]
+        public async Task<IActionResult> GetEventRegistByEvent(Guid eventId)
+        {
+            var eventRegistIds = await _eventRegistRepository.GetEventRegistIdsByEvent(eventId);
+            return Ok(eventRegistIds);
+        }
 
         // POST: api/EventRegist
         [HttpPost]
-        [Authorize(Roles = "Admin, UserManager,Users")]
+        [Authorize(Roles = "Admin, UserManager,User")]
         public async Task<IActionResult> CreateEventRegist([FromBody] EventRegistModel newRegist)
         {
             if (ModelState.IsValid)
@@ -73,22 +88,6 @@ namespace Backend.Controllers
                     return BadRequest("The user already has a registration for this event!");
                 }
                 
-                // Obter a capacidade máxima do evento
-                int maxCapacity = await _context.Set<event_info>()
-                    .Where(e => e.id == newRegist.Event_ID)
-                    .Select(e => e.capacity)
-                    .FirstOrDefaultAsync();
-
-                // Obter o número de registos existentes para o evento
-                int registCount = await _context.Set<event_regist>()
-                    .CountAsync(regist => regist.event_id == newRegist.Event_ID);
-                Console.WriteLine(registCount);
-                Console.WriteLine(maxCapacity);
-                if (registCount >= maxCapacity)
-                {
-                    return BadRequest("The event's maximum capacity has been reached!");
-                }
-
                 var createdRegist = await _eventRegistRepository.CreateEventRegist(newRegist);
                 return Ok(createdRegist);
             }
@@ -99,7 +98,7 @@ namespace Backend.Controllers
         
         // PUT: api/EventRegist/{id}
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,UserManager,User")]
         public async Task<IActionResult> UpdateEventRegist(Guid id, [FromBody] EventRegistModel updatedRegist)
         { 
             if (id != updatedRegist.ID)
