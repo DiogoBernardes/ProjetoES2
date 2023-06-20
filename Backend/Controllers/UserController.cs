@@ -174,7 +174,7 @@ namespace Backend.Controllers
                 
         // GET: api/user
         [HttpGet("GetRoles")]
-        [Authorize(Roles = "Admin, UserManager")]
+        [Authorize(Roles = "Admin, UserManager, User")]
         public async Task<IActionResult> GetRole()
         {
             var roles = await _userRepository.GetRole();
@@ -183,7 +183,6 @@ namespace Backend.Controllers
         
         // GET: api/user
         [HttpGet("GetUserByEmail/{email}")]
-        [Authorize(Roles = "Admin, UserManager, User")]
         public async Task<IActionResult> GetUserByEmail(string email)
         {
             var user = await _userRepository.GetUserByEmail(email);

@@ -4,116 +4,123 @@
 @using System.Net.Http.Headers
 @using System.IdentityModel.Tokens.Jwt
 @using System.Security.Claims
+@using Frontend.Models.Event
 @inject HttpClient httpClient
 @inject ILocalStorageService localStorage
 @inject NavigationManager navigationManager
-@inject IJSRuntime jsRuntime
 
-<h3>Profile</h3>
+<style>
+    .custom-details {
+        margin-bottom: 20px;
+    }
+    
+    .custom-details label {
+        font-weight: bold;
+    }
+    
+    .custom-btn {
+        background-color: #007bff;
+        color: #fff;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+</style>
 
-@if (userProfile != null)
+<h3>Edit User Profile</h3>
+
+@if (users != null)
 {
-    <div>
-        <p><strong>Name:</strong> @userProfile.Name</p>
-        <p><strong>Email:</strong> @userProfile.Email</p>
-        <p><strong>Username:</strong> @userProfile.Username</p>
-        <p><strong>Phone:</strong> @userProfile.Phone</p>
-
-        <h4>Edit Profile</h4>
-        <div>
-            <label for="name">Name:</label>
-            <input id="name" type="text" @bind="@userModel.Name" />
-        </div>
-        <div>
-            <label for="email">Email:</label>
-            <input id="email" type="email" @bind="@userModel.Email" />
-        </div>
-        <div>
-            <label for="username">Username:</label>
-            <input id="username" type="text" @bind="@userModel.Username" />
-        </div>
-        <div>
-            <label for="password">Password:</label>
-            <input id="password" type="text" @bind="@userModel.Password" />
-        </div>
-        <div>
-            <label for="phone">Phone:</label>
-            <input id="phone" type="text" @bind="@userModel.Phone" />
-        </div>
-        <button @onclick="UpdateUser">Save</button>
+    <div class="custom-details" style="padding-top: 30px">
+        <label>Name:</label>
+        <div>@users.Name</div>
     </div>
+    <div class="custom-details">
+        <label>Username:</label>
+        <div>@users.Username</div>
+    </div>
+    <div class="custom-details">
+        <label>Email:</label>
+        <div>@users.Email</div>
+    </div>
+    <div class="custom-details">
+        <label>Phone:</label>
+        <div>@users.Phone</div>
+    </div>
+    <div class="custom-details">
+        <label>Password:</label>
+        <div>@users.Password</div>
+    </div>
+    <button class="btn btn-primary custom-btn" @onclick="() => EditUser(users)">Edit</button>
 }
 else
 {
-    <p>No user profile available.</p>
+    <p>Error fetching users.</p>
 }
 
+
 @code {
-    private UserModel userProfile;
-    private UserModel userModel;
 
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
+    private UpdateEventModel newEvent = new();
 
-        var token = await localStorage.GetItemAsync<string>("token");
+    private string token;
+    private string userEmail;
+    private Guid userId;
+    private UserModel users;
 
-        // Decodificar o token e extrair as informações do usuário
+    protected override async Task OnInitializedAsync() {
+        
+        token = await localStorage.GetItemAsync<string>("token");
+
+    // Decodificar o token e extrair as informações do utilizador
         var tokenHandler = new JwtSecurityTokenHandler();
         var decodedToken = tokenHandler.ReadJwtToken(token);
 
-        // Extrair o email do usuário
-        var userEmail = decodedToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+    // Extrair o email do utilizador
+        userEmail = decodedToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
 
-        // Obter o perfil do usuário
-        userProfile = await GetUserProfile(userEmail);
-        
-        // Inicializar o objeto UserModel auxiliar com os valores atuais do perfil do usuário
-        userModel = new UserModel
-        {
-            Name = userProfile.Name,
-            Email = userProfile.Email,
-            Username = userProfile.Username,
-            Phone = userProfile.Phone,
-            Password = userProfile.Password,
-            ID = userProfile.ID
-        };
+    // Obter o ID do utilizador com base no email
+        userId = await GetUserIdByEmail(userEmail);
+        await ListProfile(userId);
+
     }
 
-    private async Task<UserModel> GetUserProfile(string email)
-    {
-        var token = await localStorage.GetItemAsync<string>("token");
-
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
+    private async Task<Guid> GetUserIdByEmail(string email) {
+        
         var response = await httpClient.GetAsync($"http://localhost:5052/api/User/GetUserByEmail/{email}");
 
-        if (response.IsSuccessStatusCode)
-        {
+        if (response.IsSuccessStatusCode) {
             var user = await response.Content.ReadFromJsonAsync<UserModel>();
-            return user;
+            if (user != null) {
+                return user.ID;
+            }
         }
 
-        return null;
+        return Guid.Empty;
     }
-
-    private async Task UpdateUser()
+    
+    
+    private async Task ListProfile(Guid user_id)
     {
         var token = await localStorage.GetItemAsync<string>("token");
 
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-        var response = await httpClient.PutAsJsonAsync($"http://localhost:5052/api/User/{userProfile.ID}", userModel);
+        var response = await httpClient.GetAsync($"http://localhost:5052/api/User/{user_id}");
 
         if (response.IsSuccessStatusCode)
         {
-            // Atualização bem-sucedida, exibir mensagem de sucesso
-            await jsRuntime.InvokeVoidAsync("alert", "User updated successfully!");
-        }
-        else
-        {
-            // Ocorreu um erro durante a atualização, exibir mensagem de erro
-            await jsRuntime.InvokeVoidAsync("alert", "An error occurred while updating the user.");
+            users = await response.Content.ReadFromJsonAsync<UserModel>();
         }
     }
+    
+    private void EditUser(UserModel user)
+    {
+        navigationManager.NavigateTo($"/EditUserProfileManagement/{user.ID}", true);
+    }
+
+
+    
 }
+

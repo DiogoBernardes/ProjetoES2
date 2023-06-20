@@ -3,8 +3,11 @@
 @using Blazored.LocalStorage
 @using System.Net.Http.Headers
 @using System.IdentityModel.Tokens.Jwt
+@using System.Security.Claims
 @using System.Text
+@using Frontend.Models.Event.regist
 @using Frontend.Models.Event.Ticket
+@using Frontend.Models.User
 @inject HttpClient httpClient
 @inject ILocalStorageService localStorage
 @inject NavigationManager navigationManager
@@ -55,13 +58,17 @@
         }
     </div>
     <button class="btn btn-danger">Cancelar</button>
-    <button class="btn btn-primary">Confirmar</button>
+    <button class="btn btn-primary" @onclick="RegisterUserForEvent">Confirmar</button>
 }
 
 @code {
     private EventModel eventDetails;
     private Guid eventId;
     private string selectedTicketId;
+    private string token;
+    private string userEmail;
+    private Guid userId;
+    private EventRegistModel newRegist;
 
     [Parameter]
     public string EventId
@@ -83,6 +90,39 @@
         {
             await LoadEventDetails(eventId);
         }
+        
+        token = await localStorage.GetItemAsync<string>("token");
+
+    // Decodificar o token e extrair as informações do utilizador
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var decodedToken = tokenHandler.ReadJwtToken(token);
+
+    // Extrair o email do utilizador
+        userEmail = decodedToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+
+    // Obter o ID do utilizador com base no email
+        userId = await GetUserIdByEmail(userEmail);
+
+    // Atribuir o valor do userId ao Organizer_ID
+        newRegist = new EventRegistModel();
+        newRegist.Participant_ID = userId;
+    }
+    
+
+    private async Task<Guid> GetUserIdByEmail(string email)
+    {
+        var response = await httpClient.GetAsync($"http://localhost:5052/api/User/GetUserByEmail/{email}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var user = await response.Content.ReadFromJsonAsync<UserModel>();
+            if (user != null)
+            {
+                return user.ID;
+            }
+        }
+
+        return Guid.Empty;
     }
 
     private async Task LoadEventDetails(Guid eventId)
@@ -120,6 +160,31 @@
         else
         {
             // erro
+        }
+    }
+    
+    private async Task RegisterUserForEvent()
+    {
+        var eventRegist = new CreateEventRegistModal
+        {
+            Event_ID = eventId,
+            Participant_ID = userId,
+            State_ID = Guid.Parse("85273b77-8f6c-4431-b155-f3c2b3c80f66"), // Ajuste de acordo com a lógica de negócios
+            Ticket_Type_ID = Guid.Parse(selectedTicketId)
+        };
+
+        var token = await localStorage.GetItemAsync<string>("token");
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await httpClient.PostAsJsonAsync("http://localhost:5052/api/EventRegist", eventRegist);
+
+        if (response.IsSuccessStatusCode)
+        {
+            navigationManager.NavigateTo("/events"); // Redirecionar para a página de eventos ou outra página conforme necessário
+        }
+        else
+        {
+        // Lidar com o erro conforme necessário
         }
     }
 }
