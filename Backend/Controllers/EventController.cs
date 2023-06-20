@@ -19,7 +19,7 @@ namespace Backend.Controllers
 
         // GET: api/Event
         [HttpGet]
-        [Authorize(Roles = "Admin, UserManager,Users")]
+        [Authorize(Roles = "Admin, UserManager,User")]
         public async Task<IActionResult> GetEvents()
         {
             var getEvents = await _eventRepository.GetEvents();
@@ -29,7 +29,7 @@ namespace Backend.Controllers
 
         // GET: api/Event
         [HttpGet("{id}")]
-        [Authorize(Roles = "Admin,UserManager,Users")]
+        [Authorize(Roles = "Admin,UserManager,User")]
         public async Task<IActionResult> GetEvent(Guid id)
         {
             var getEvent = await _eventRepository.GetEvent(id);
@@ -44,7 +44,7 @@ namespace Backend.Controllers
 
         // POST: api/Event
         [HttpPost("add")]
-        [Authorize(Roles = "Admin,UserManager,Users")]
+        [Authorize(Roles = "Admin,UserManager,User")]
         public async Task<IActionResult> CreateEvent([FromBody] CreateEventModel newEvent)
         {
             DateTime nowPlus10Minutes = DateTime.Now.AddMinutes(10);
@@ -65,7 +65,7 @@ namespace Backend.Controllers
         
         // PUT: api/Event/{id}
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin,UserManager,Users")]
+        [Authorize(Roles = "Admin,UserManager,User")]
         public async Task<IActionResult> UpdateEvent(Guid id, [FromBody] UpdateEventModel updatedEvent)
         { 
             if (id != updatedEvent.ID)
@@ -81,7 +81,7 @@ namespace Backend.Controllers
         
         // DELETE: api/Event/{id}
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin,UserManager,Users")]
+        [Authorize(Roles = "Admin,UserManager,User")]
         public async Task<IActionResult> DeleteEvent(Guid id)
         {
             int eventDeletedId = await _eventRepository.DeleteEvent(id);
