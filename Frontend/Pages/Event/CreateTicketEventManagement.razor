@@ -1,0 +1,156 @@
+@page "/CreateEventTicket"
+@using Frontend.Models.Event.Ticket
+@using Blazored.LocalStorage
+@using System.Net.Http.Headers
+@using System.Security.Claims
+@using System.IdentityModel.Tokens.Jwt
+@using Frontend.Models.Event
+@using Frontend.Models.User
+@using Microsoft.AspNetCore.Components
+@inject HttpClient httpClient
+@inject ILocalStorageService localStorage
+@inject NavigationManager navigationManager
+
+<h3>Create Event Ticket</h3>
+
+<div class="form-group">
+    <label for="tickettype">Ticket Type:</label>
+    <select id="tickettype" class="form-control" @bind="newEventTicket.ticket_ID">
+        @foreach (var _ticket in ticket_type)
+        {
+            <option value="@_ticket.ID">@_ticket.Name</option>
+        }
+    </select>
+</div>
+
+<div class="form-group">
+    <label for="event">Event::</label>
+    <select id="event" class="form-control" @bind="newEventTicket.event_ID">
+        @foreach (var _event in events)
+        {
+            <option value="@_event.ID">@_event.Name</option>
+        }
+    </select>
+</div>
+
+<div class="form-group">
+    <label for="quantity">Quantity:</label>
+    <input id="quantity" class="form-control" type="number" @bind="newEventTicket.quantity" />
+</div>
+
+<div class="form-group">
+    <label for="price">Price:</label>
+    <input id="price" class="form-control" type="number" step="0.01" @bind="newEventTicket.Price" />
+</div>
+
+<div class="form-group">
+    <button class="btn btn-primary" @onclick="CreateEventTicketAsync">Create</button>
+</div>
+
+@code {
+    private CreateEventTicketModel newEventTicket = new();
+    private List<EventModel> events = new();
+    private List<TicketTypeModel> ticket_type = new();
+    private string token;
+    private string userEmail;
+    private Guid userId;
+    private string errorMessage;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await GetEvents();
+        await GetTicketType();
+        
+        token = await localStorage.GetItemAsync<string>("token");
+
+        // Decodificar o token e extrair as informações do utilizador
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var decodedToken = tokenHandler.ReadJwtToken(token);
+
+        // Extrair o email do utilizador
+        userEmail = decodedToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+
+        // Obter o ID do utilizador com base no email
+        userId = await GetUserIdByEmail(userEmail);
+    }
+
+    private async Task<Guid> GetUserIdByEmail(string email)
+    {
+        var response = await httpClient.GetAsync($"http://localhost:5052/api/User/GetUserByEmail/{email}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var user = await response.Content.ReadFromJsonAsync<UserModel>();
+            if (user != null)
+            {
+                return user.ID;
+            }
+        }
+
+        return Guid.Empty;
+    }
+
+    private async Task GetEvents()
+    {
+        var token = await localStorage.GetItemAsync<string>("token");
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await httpClient.GetAsync("http://localhost:5052/api/Event");
+
+        if (response.IsSuccessStatusCode)
+        {
+            events = await response.Content.ReadFromJsonAsync<List<EventModel>>();
+            try
+            {
+                if (events != null && events.Count > 0)
+                {
+                    newEventTicket.event_ID = events[0].ID;
+                }
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message;
+            }
+            
+        }
+    }
+    
+    private async Task GetTicketType()
+    {
+        var token = await localStorage.GetItemAsync<string>("token");
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await httpClient.GetAsync("http://localhost:5052/api/EventTicket/GetAvailableTicketTypes");
+
+        if (response.IsSuccessStatusCode)
+        {
+            ticket_type = await response.Content.ReadFromJsonAsync<List<TicketTypeModel>>();
+            try
+            {
+                if (ticket_type != null && ticket_type.Count > 0)
+                {
+                    newEventTicket.ticket_ID = ticket_type[0].ID;
+                }
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message;
+            }
+            
+        }
+    }
+
+    private async Task CreateEventTicketAsync()
+    {
+        var response = await httpClient.PostAsJsonAsync("http://localhost:5052/api/EventTicket", newEventTicket);
+
+        if (response.IsSuccessStatusCode)
+        {
+            navigationManager.NavigateTo("OrganizedEventPage", true);
+        }
+        else
+        {
+            Console.WriteLine("Failed to create event ticket.");
+        }
+    }
+}

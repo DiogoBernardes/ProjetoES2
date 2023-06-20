@@ -3,6 +3,7 @@
 @using Blazored.LocalStorage
 @using System.Net.Http.Headers
 @using System.IdentityModel.Tokens.Jwt
+@using Frontend.Models.Event.Ticket
 @inject HttpClient httpClient
 @inject ILocalStorageService localStorage
 @inject NavigationManager navigationManager
@@ -17,7 +18,6 @@
     <table class="table">
         <thead>
             <tr>
-                <th>ID</th>
                 <th>Name</th>
                 <th>Date/Time</th>
                 <th>Localization</th>
@@ -33,7 +33,6 @@
             @foreach (var evt in events)
             {
                 <tr>
-                    <td>@evt.ID</td>
                     <td>@evt.Name</td>
                     <td>@evt.Date_Hour</td>
                     <td>@evt.Localization</td>
@@ -42,7 +41,7 @@
                     <td>@evt.Category.Name</td>
                     <td><button class="btn btn-primary" @onclick="() => EditEvent(evt)">Edit</button></td>
                     <td><button class="btn btn-danger" @onclick="() => RemoveEvent(evt)">Remove</button></td>
-                    <td><button class="btn btn-info" @onclick="() => ShowTicketInfo(evt)">Tickets</button></td>
+                    <td><button class="btn btn-info" @onclick="() => GetTicketsFromEvent(evt.ID)">Tickets</button></td>
                 </tr>
             }
         </tbody>
@@ -54,30 +53,63 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th>Event Name</th>
                     <th>Ticket Type</th>
                     <th>Quantity</th>
                     <th>Price</th>
                     <th></th>
-                 
-                   
                 </tr>
             </thead>
             <tbody>
-                @foreach (var ticket in selectedEvent.Tickets)
+                @foreach (var ticket in eventTickets)
                 {
                     <tr>
-                        <td>@selectedEvent.Name</td>
-                        <td>@ticket.TicketType.Name</td>
-                        <td>@ticket.Quantity</td>
-                        <td>@ticket.Price</td>
-                        <td><button class="btn btn-primary" >Edit</button>
-                        <button class="btn btn-danger">Remove</button></td>
+                        <td>
+                            @if (editingTicket != null && editingTicket.ID == ticket.ID)
+                            {
+                                <input type="text" readonly="readonly" @bind="@editingTicket.TicketType.Name" />
+                            }
+                            else
+                            {
+                                @ticket.TicketType.Name
+                            }
+                        </td>
+                        <td>
+                            @if (editingTicket != null && editingTicket.ID == ticket.ID)
+                            {
+                                <input type="number" @bind="@editingTicket.Quantity" />
+                            }
+                            else
+                            {
+                                @ticket.Quantity
+                            }
+                        </td>
+                        <td>
+                            @if (editingTicket != null && editingTicket.ID == ticket.ID)
+                            {
+                                <input type="number" step="0.01" @bind="@editingTicket.Price" />
+                            }
+                            else
+                            {
+                                @ticket.Price
+                            }
+                        </td>
+                        <td>
+                            @if (editingTicket != null && editingTicket.ID == ticket.ID)
+                            {
+                                <button class="btn btn-primary" @onclick="() => SaveTicket(editingTicket)">Save</button>
+                                <button class="btn btn-secondary" @onclick="CancelEdit">Cancel</button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-primary" @onclick="() => EditTicket(ticket)">Edit</button>
+                                <button class="btn btn-danger" @onclick="() => RemoveTicket(ticket)">Remove</button>
+                            }
+                        </td>
                     </tr>
                 }
             </tbody>
         </table>
-        <button class="btn btn-success">Add Ticket </button>
+        <button class="btn btn-success" @onclick="AddTicket">Add Ticket</button>
         <button class="btn btn-secondary" @onclick="HideTicketTable">Close</button>
     }
 }
@@ -88,9 +120,11 @@ else
 
 @code {
     private List<EventModel> events;
+    private List<EventTicketModel> eventTickets;
     private EventModel eventToEdit;
     private EventModel selectedEvent;
     private bool showTicketTable = false;
+    private EventTicketModel editingTicket;
 
     protected override async Task OnInitializedAsync()
     {
@@ -109,7 +143,7 @@ else
         {
             var allEvents = await response.Content.ReadFromJsonAsync<List<EventModel>>();
 
-            // Filtra os eventos em que o organizador é o usuário logado
+            // Filtra os eventos em que o organizador é o utilizador logado
             var userId = await CurrentUserId();
             events = allEvents.Where(evt => evt.Organizer_ID == userId).ToList();
         }
@@ -132,6 +166,21 @@ else
         }
 
         return Guid.Empty;
+    }
+
+    private async Task GetTicketsFromEvent(Guid eventId)
+    {
+        var token = await localStorage.GetItemAsync<string>("token");
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await httpClient.GetAsync($"http://localhost:5052/api/EventTicket/GetEventTicketsByEvent/{eventId}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            eventTickets = await response.Content.ReadFromJsonAsync<List<EventTicketModel>>();
+            selectedEvent = events.FirstOrDefault(evt => evt.ID == eventId);
+            showTicketTable = true;
+        }
     }
 
     private void EditEvent(EventModel evt)
@@ -162,15 +211,63 @@ else
         }
     }
 
-    private void ShowTicketInfo(EventModel evt)
-    {
-        selectedEvent = evt;
-        showTicketTable = true;
-    }
-
     private void HideTicketTable()
     {
         showTicketTable = false;
+    }
+
+    private async Task RemoveTicket(EventTicketModel ticket)
+    {
+        var confirmed = await jsRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to remove this ticket?");
+
+        if (confirmed)
+        {
+            var token = await localStorage.GetItemAsync<string>("token");
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await httpClient.DeleteAsync($"http://localhost:5052/api/EventTicket/{ticket.ID}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                await GetTicketsFromEvent(selectedEvent.ID);
+            }
+            else
+            {
+                Console.WriteLine("Failed to remove ticket.");
+            }
+        }
+    }
+
+    private void EditTicket(EventTicketModel ticket)
+    {
+        editingTicket = ticket;
+    }
+
+    private async Task SaveTicket(EventTicketModel ticket)
+    {
+        var token = await localStorage.GetItemAsync<string>("token");
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await httpClient.PutAsJsonAsync($"http://localhost:5052/api/EventTicket/EditTicket/{ticket.ID}", ticket);
+
+        if (response.IsSuccessStatusCode)
+        {
+            editingTicket = null;
+        }
+        else
+        {
+            Console.WriteLine("Failed to save ticket.");
+        }
+    }
+
+    private void CancelEdit()
+    {
+        editingTicket = null;
+    }
+
+    private void AddTicket()
+    {
+        navigationManager.NavigateTo($"CreateEventTicket", true);
     }
 
     private void CreateEvent()

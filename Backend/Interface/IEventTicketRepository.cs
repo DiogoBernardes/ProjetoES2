@@ -1,3 +1,4 @@
+using BusinessLogic.Entities;
 using BusinessLogic.Models.Event;
 using BusinessLogic.Models.Event.ticket;
 
@@ -7,9 +8,11 @@ public interface IEventTicketRepository
 {
     Task<List<EventTicketModel>> GetEventTickets();
     Task<EventTicketModel> GetEventTicket(Guid id);
-    Task<EventTicketModel> CreateEventTicket(EventTicketModel newEventTicket);
+    Task<CreateEventTicketModel> CreateEventTicket(CreateEventTicketModel newEventTicket);
     
-    Task UpdateEventTicket(EventTicketModel newEventTicket);
+    Task UpdateEventTicket(EditEventTicketModel newEventTicket);
     Task<int> DeleteEventTicket(Guid id);
     Task<List<EventTicketModel>> GetEventTicketsByEvent(Guid eventId);
+    Task<List<TicketTypeModel>> GetAvailableTicketTypes();
+    Task<event_ticket?> GetEventTicketByType(Guid eventId, Guid ticketTypeId);
 }
