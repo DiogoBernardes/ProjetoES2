@@ -7,7 +7,6 @@
 @inject HttpClient httpClient
 @inject ILocalStorageService localStorage
 @inject NavigationManager navigationManager
-@inject IJSRuntime jsRuntime
 
 <h3>Events</h3>
 
@@ -59,14 +58,16 @@
             {
                 <tr>
                     <td>@evt.ID</td>
-                    <td>@evt.Organizer_Name</td>
+                    <td>@evt.organizer.Name</td>
                     <td>@evt.Name</td>
                     <td>@evt.Date_Hour</td>
                     <td>@evt.Localization</td>
                     <td>@evt.Description</td>
                     <td>@evt.Capacity</td>
                     <td>@evt.Category.Name</td>
-                    <td><button class="btn btn-primary" @onclick="() => RegisterEvent(evt.ID)">Inscrever</button></td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="() => OpenEventDetails(evt.ID)">Inscrever</button>
+                    </td>
                 </tr>
             }
         </tbody>
@@ -118,28 +119,12 @@ else
         categories = events.Select(e => e.Category.Name).Distinct().ToList();
     }
 
-    private async Task RegisterEvent(Guid eventId)
+    private void OpenEventDetails(Guid eventId)
     {
-        var token = await localStorage.GetItemAsync<string>("token");
+        var eventDetailsUrl = $"/EventsTicketDetails/{eventId}";
 
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-        var response = await httpClient.PostAsync("http://localhost:5052/api/EventRegist", new StringContent(eventId.ToString(), Encoding.UTF8, "application/json"));
-
-        if (response.IsSuccessStatusCode)
-        {
-            // Registro bem-sucedido
-            // Você pode exibir uma mensagem de sucesso ou atualizar a lista de eventos para refletir o registro
-            await LoadData(); // Atualiza a lista de eventos após o registro
-        }
-        else
-        {
-            // Tratar falha no registro
-            // Exemplo: exibir uma mensagem de erro
-            var errorMessage = await response.Content.ReadAsStringAsync();
-            // Exiba a mensagem de erro para o usuário usando um componente ou alerta personalizado
-            await jsRuntime.InvokeVoidAsync("alert", errorMessage);
-        }
+        // Redireciona para a nova tela, permanecendo no mesmo separador do navegador
+        navigationManager.NavigateTo(eventDetailsUrl);
     }
 
     private void FilterEvents()
@@ -157,7 +142,7 @@ else
         }
     }
 
-    private async Task SearchEvents()
+    private void SearchEvents()
     {
         FilterEvents();
     }

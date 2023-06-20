@@ -1,0 +1,125 @@
+@page "/EventsTicketDetails/{eventId}"
+@using Frontend.Models.Event
+@using Blazored.LocalStorage
+@using System.Net.Http.Headers
+@using System.IdentityModel.Tokens.Jwt
+@using System.Text
+@using Frontend.Models.Event.Ticket
+@inject HttpClient httpClient
+@inject ILocalStorageService localStorage
+@inject NavigationManager navigationManager
+
+<h3>EventsTicketDetails</h3>
+
+<div style="background: #f2f2f2; padding: 20px;">
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h3 style="color: #0a53be; font-size: 24px;">@eventDetails?.Name</h3>
+        <p style="color: #666;">@eventDetails?.Date_Hour</p>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center;">
+        <div style="background: #fff; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+            <p><strong>Localization:</strong> @eventDetails?.Localization</p>
+            <p><strong>Description:</strong> @eventDetails?.Description</p>
+            <p><strong>Capacity:</strong> @eventDetails?.Capacity</p>
+            <p><strong>Category:</strong> @eventDetails?.Category?.Name</p>
+        </div>
+        <div style="background: #0a53be; color: #fff; padding: 10px; border-radius: 5px; margin-bottom: 10px; text-align: center;">
+            Organizer Name: @eventDetails?.organizer.Name
+        </div>
+    </div>
+</div>
+
+
+
+@if (eventDetails?.Tickets != null)
+{
+    <div>
+        <h4>Ticket Prices</h4>
+        <div class="form-group">
+            <label for="ticketSelection">Select a Ticket:</label>
+            <select id="ticketSelection" class="form-control" @bind="@selectedTicketId">
+                <option value="">Choose a ticket</option>
+                @foreach (var ticket in eventDetails.Tickets)
+                {
+                    <option value="@ticket.TicketType.Name">@ticket.TicketType.Name</option>
+                }
+            </select>
+        </div>
+        @if (!string.IsNullOrEmpty(selectedTicketId))
+        {
+            var selectedTicket = eventDetails.Tickets.FirstOrDefault(t => t.TicketType.Name == selectedTicketId);
+            if (selectedTicket != null)
+            {
+                <p style="background: #e6dbb9">Price: @selectedTicket.Price</p>
+            }
+        }
+    </div>
+    <button class="btn btn-danger">Cancelar</button>
+    <button class="btn btn-primary">Confirmar</button>
+}
+
+@code {
+    private EventModel eventDetails;
+    private Guid eventId;
+    private string selectedTicketId;
+
+    [Parameter]
+    public string EventId
+    {
+        get => eventId.ToString();
+        set
+        {
+            if (Guid.TryParse(value, out var parsedId))
+            {
+                eventId = parsedId;
+                LoadEventDetails(eventId);
+            }
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (eventId != Guid.Empty)
+        {
+            await LoadEventDetails(eventId);
+        }
+    }
+
+    private async Task LoadEventDetails(Guid eventId)
+    {
+        var token = await localStorage.GetItemAsync<string>("token");
+
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await httpClient.GetAsync($"http://localhost:5052/api/Event/{eventId}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            eventDetails = await response.Content.ReadFromJsonAsync<EventModel>();
+            await LoadTicketPrices(eventId);
+        }
+        else
+        {
+            // erro
+        }
+    }
+
+    private async Task LoadTicketPrices(Guid eventId)
+    {
+        var token = await localStorage.GetItemAsync<string>("token");
+
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await httpClient.GetAsync($"http://localhost:5052/api/EventTicket/GetEventTicketsByEvent/{eventId}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var eventTickets = await response.Content.ReadFromJsonAsync<List<EventTicketModel>>();
+            eventDetails.Tickets = eventTickets;
+        }
+        else
+        {
+            // erro
+        }
+    }
+}

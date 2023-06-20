@@ -44,7 +44,7 @@ namespace Backend.Controllers
         
         // GET: api/EventTicket/GetEventTicketsByEvent/{eventId}
         [HttpGet("GetEventTicketsByEvent/{eventId}")]
-        [Authorize(Roles = "Admin, UserManager")]
+        [Authorize(Roles = "Admin, UserManager, User")]
         public async Task<IActionResult> GetEventTicketsByEvent(Guid eventId)
         {
             var eventTickets = await _eventTicketRepository.GetEventTicketsByEvent(eventId);
@@ -53,7 +53,7 @@ namespace Backend.Controllers
 
         // POST: api/EventTicket
         [HttpPost]
-        [Authorize(Roles = "Admin, UserManager,Users")]
+        [Authorize(Roles = "Admin, UserManager,User")]
         public async Task<IActionResult> CreateEventTicket([FromBody] EventTicketModel newEventTicket)
         {
             if (ModelState.IsValid)
