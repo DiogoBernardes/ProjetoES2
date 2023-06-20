@@ -1,0 +1,87 @@
+@page "/EditTicket/{ticketId}"
+@using Frontend.Models.Event
+@using Blazored.LocalStorage
+@using System.Net.Http.Headers
+@using Frontend.Models.Event.Ticket
+@inject HttpClient httpClient
+@inject ILocalStorageService localStorage
+@inject NavigationManager navigationManager
+
+<h3>Edit Ticket</h3>
+
+@if (ticketToEdit != null)
+{
+    <form>
+        <div class="form-group">
+            <label for="eventName">Event Name:</label>
+            <input id="eventName" class="form-control" type="text" readonly value="@ticketToEdit.Event.Name" />
+        </div>
+        
+        <div class="form-group">
+            <label for="ticketType">Ticket Type:</label>
+            <input id="ticketType" class="form-control" type="text" readonly value="@ticketToEdit.TicketType.Name" />
+        </div>
+
+        <div class="form-group">
+            <label for="quantity">Quantity:</label>
+            <input id="quantity" type="number" class="form-control" @bind="ticketToEdit.Quantity"/>
+        </div>
+        
+        <div class="form-group">
+            <label for="price">Price:</label>
+            <input id="price" type="number" step="0.01" class="form-control" @bind="ticketToEdit.Price"/>
+        </div>
+        
+        <button type="submit" class="btn btn-primary" @onclick="UpdateTicket">Save</button>
+    </form>
+}
+else
+{
+    <p>Loading ticket details...</p>
+}
+
+@code {
+    private EditEventTicketModel ticketToEdit { get; set; }
+    private Guid userId;
+    private string token;
+    private string userEmail;
+    [Parameter]
+    public string ticketId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetEventDetails();
+    }
+
+    private async Task GetEventDetails()
+    {
+        var token = await localStorage.GetItemAsync<string>("token");
+
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await httpClient.GetAsync($"http://localhost:5052/api/EventTicket/{ticketId}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            ticketToEdit = await response.Content.ReadFromJsonAsync<EditEventTicketModel>() ?? throw new InvalidOperationException();
+        }
+    }
+    
+    private async Task UpdateTicket()
+    {
+        var token = await localStorage.GetItemAsync<string>("token");
+
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await httpClient.PutAsJsonAsync($"http://localhost:5052/api/EventTicket/EditTicket/{ticketId}", ticketToEdit);
+
+        if (response.IsSuccessStatusCode)
+        {
+            navigationManager.NavigateTo("OrganizedEventPage", true);
+        }
+        else
+        {
+            Console.WriteLine("Failed to update ticket.");
+        }
+    }
+}

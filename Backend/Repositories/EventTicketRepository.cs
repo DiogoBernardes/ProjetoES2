@@ -1,7 +1,6 @@
 using Backend.Interface;
 using BusinessLogic.Context;
 using BusinessLogic.Entities;
-using BusinessLogic.Models.Event;
 using BusinessLogic.Models.Event.ticket;
 using Microsoft.EntityFrameworkCore;
 
@@ -69,21 +68,26 @@ public class EventTicketRepository : IEventTicketRepository
             }).ToListAsync();
     }
 
-    
-    
-    public async Task<EventTicketModel> CreateEventTicket(EventTicketModel newEventTicket) {
-        _context.Set<event_ticket>().Add(new event_ticket() {
+    public async Task<CreateEventTicketModel> CreateEventTicket(CreateEventTicketModel newEventTicket)
+    {
+        _context.Set<event_ticket>().Add(new event_ticket()
+        {
             id = newEventTicket.ID,
-            ticket_type = newEventTicket.TicketType_ID,
-            event_id = newEventTicket.Event_ID,
-            quantity = newEventTicket.Quantity,
+            ticket_type = newEventTicket.ticket_ID,
+            event_id = newEventTicket.event_ID,
+            quantity = newEventTicket.quantity,
             price = newEventTicket.Price
         });
+
         await _context.SaveChangesAsync();
+
         return newEventTicket;
     }
+
     
-    public async Task UpdateEventTicket(EventTicketModel newEventTicket)
+    
+    
+    public async Task UpdateEventTicket(EditEventTicketModel newEventTicket)
     {
         var existingEventTicket = await _context.event_tickets.FirstOrDefaultAsync(c => c.id == newEventTicket.ID);
 
@@ -91,13 +95,11 @@ public class EventTicketRepository : IEventTicketRepository
         {
             throw new ArgumentException("Event Ticket not found");
         }
-
+        
         existingEventTicket.id = newEventTicket.ID;
-        existingEventTicket.event_id = newEventTicket.Event_ID;
-        existingEventTicket.ticket_type = newEventTicket.TicketType_ID;
         existingEventTicket.quantity = newEventTicket.Quantity;
         existingEventTicket.price = newEventTicket.Price;
-
+        
         await _context.SaveChangesAsync();
     }
     
@@ -116,5 +118,20 @@ public class EventTicketRepository : IEventTicketRepository
 
         return _context.SaveChangesAsync().Result;
     }
+    
+    public async Task<List<TicketTypeModel>> GetAvailableTicketTypes()
+    {
+           return await _context.Set<ticket_type>().Select(eventTicket => new TicketTypeModel() {
+            ID = eventTicket.id,
+            Name = eventTicket.name
+        }).ToListAsync();
+    }
+    
+    public async Task<event_ticket?> GetEventTicketByType(Guid eventId, Guid ticketTypeId)
+    {
+        return await _context.event_tickets
+            .FirstOrDefaultAsync(t => t.event_id == eventId && t.ticket_type == ticketTypeId);
+    }
+    
 
 }

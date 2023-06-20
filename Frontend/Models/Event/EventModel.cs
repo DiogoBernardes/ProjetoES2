@@ -15,4 +15,5 @@ public class EventModel
     public EventCategoryModel Category { get; set; }
     public string Organizer_Name { get; set; }
     public List<EventTicketModel> Tickets { get; set; }
+    public Guid EventTicket_ID { get; set; }
 }
