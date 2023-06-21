@@ -12,8 +12,7 @@
 
 <h3>Edit User</h3>
 
-@if (user != null)
-{
+
     <form class="form">
         <div class="form-group">
             <label for="name">Name</label>
@@ -37,29 +36,54 @@
         </div>
         <div class="form-group">
             <label for="role">Role:</label>
-            <select id="role" style="border: 1px solid #ccc; padding: 10px;border-radius: 5px;" class="form-control custom-input" @bind="user.Role_id">
-                @foreach (var role in roles)
-                {
-                    if (role.Name == "User")
+            @if (UserIsUserManager)
+            {
+                <select id="role" style="border: 1px solid #ccc; padding: 10px;border-radius: 5px;" class="form-control custom-input" @bind="user.Role_id">
+                    @foreach (var role in roles)
                     {
-                        <option value="@role.ID">@role.Name</option>
+                        if (role.Name == "UserManager")
+                        {
+                            <option value="@role.ID">@role.Name</option>
+                        }
                     }
-                }
-            </select>
+                </select>
+            }
+            else if(UserIsAdmin)
+            {
+                <select id="role" style="border: 1px solid #ccc; padding: 10px;border-radius: 5px;" class="form-control custom-input" @bind="user.Role_id">
+                    @foreach (var role in roles)
+                    {
+                        if (role.Name == "Admin")
+                        {
+                            <option value="@role.ID">@role.Name</option>
+                        }
+                    }
+                </select>
+            }
+            else
+            {
+                <select id="role" style="border: 1px solid #ccc; padding: 10px;border-radius: 5px;" class="form-control custom-input" @bind="user.Role_id">
+                    @foreach (var role in roles)
+                    {
+                        if (role.Name == "User")
+                        {
+                            <option value="@role.ID">@role.Name</option>
+                        }
+                    }
+                </select>
+            }
         </div>
         <button type="button" class="btn btn-primary custom-btn" @onclick="UpdateUser">Save</button>
     </form>
 
-}
-else
-{
-    <p>Error fetching user details.</p>
-}
+
+
 
 @code {
     private UpdateUserModel user;
     private List<RoleModel> roles;
-  
+    private bool UserIsAdmin;
+    private bool UserIsUserManager;
     [Parameter]
     public string UserId { get; set; }
 
@@ -67,6 +91,7 @@ else
     {
         await GetUserDetails();
         await GetRoles();        
+        await CheckUserRole();
     }
 
     private async Task GetUserDetails()
@@ -109,6 +134,23 @@ else
         if (response.IsSuccessStatusCode)
         {
             roles = await response.Content.ReadFromJsonAsync<List<RoleModel>>();
+        }
+    }
+    
+    
+    private async Task CheckUserRole()
+    {
+        var token = await localStorage.GetItemAsync<string>("token");
+        if (!string.IsNullOrEmpty(token))
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var jwtToken = tokenHandler.ReadJwtToken(token);
+
+            var roleClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
+            var role = roleClaim?.Value;
+
+            UserIsAdmin = role == "Admin";
+            UserIsUserManager = role == "UserManager";
         }
     }
 }
