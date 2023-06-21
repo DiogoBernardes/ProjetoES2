@@ -53,7 +53,6 @@
 {
     <p class="" style="text-align: center; margin-top: 100px; font-size: 20px;">Not registered for any event</p>
 
-}
 @code {
     private List<EventRegistModel> participantEvents;
     private string token;
@@ -101,15 +100,15 @@
 
         if (confirm)
         {
-            // Remover o evento da lista localmente
-            participantEvents.Remove(evt);
+            evt.State_Name = "Cancelado";
 
-            // Fazer a chamada para remover o evento no backend
-            var response = await httpClient.DeleteAsync($"http://localhost:5052/api/EventRegist/{evt.ID}");
+            var request = new HttpRequestMessage(new HttpMethod("PATCH"), $"http://localhost:5052/api/EventRegist/Cancel/{evt.ID}");
+            var response = await httpClient.SendAsync(request);
 
             if (response.IsSuccessStatusCode)
             {
                 Console.WriteLine("Event registration canceled successfully.");
+                await ListParticipantEvents();  // Recarregar os eventos após o cancelamento
             }
             else
             {

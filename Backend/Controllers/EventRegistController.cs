@@ -165,6 +165,24 @@ namespace Backend.Controllers
             var userEvents = await _eventRegistRepository.GetEventsByUser(userId);
             return Ok(userEvents);
         }
+        
+        // PATCH: api/EventRegist/Cancel/{id}
+        [HttpPatch("Cancel/{id}")]
+        [Authorize(Roles = "Admin, UserManager, User")]
+        public async Task<IActionResult> CancelEventRegist(Guid id)
+        {
+            try
+            {
+                await _eventRegistRepository.CancelEventRegist(id);
+                return Ok();
+            }
+            catch (ArgumentException)
+            {
+                return NotFound();
+            }
+        }
 
     }
+    
+    
 }
