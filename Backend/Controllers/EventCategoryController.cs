@@ -42,9 +42,8 @@ public class EventCategoryController : ControllerBase
         }
 
         // POST: api/Category
-        [HttpPost]
-        [Authorize(Roles = "Admin,UserManager,Users")]
-        public async Task<IActionResult> CreateCategory([FromBody] EventCategoryModel newCategory)
+        [HttpPost("add")]
+        public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryModel newCategory)
         {
             if (ModelState.IsValid)
             {
@@ -57,7 +56,7 @@ public class EventCategoryController : ControllerBase
         
         // PUT: api/Category/{id}
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,UserManager,User")]
         public async Task<IActionResult> UpdateUser(Guid id, [FromBody] EventCategoryModel updatedCategory)
         { 
             if (id != updatedCategory.ID)

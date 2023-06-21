@@ -33,7 +33,7 @@ public class EventCategoryRepository : IEventCategoryRepository
     }
     
     
-    public async Task<EventCategoryModel> CreateCategory(EventCategoryModel newCategory) {
+    public async Task<CreateCategoryModel> CreateCategory(CreateCategoryModel newCategory) {
         _context.Set<event_category>().Add(new event_category() {
             name = newCategory.Name,
         });

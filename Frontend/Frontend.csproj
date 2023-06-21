@@ -27,6 +27,7 @@
 
     <ItemGroup>
       <_ContentIncludedByDefault Remove="Pages\Messages\Messages.razor" />
+      <_ContentIncludedByDefault Remove="Models\Reports\EventsReport.razor" />
     </ItemGroup>
 
 </Project>
