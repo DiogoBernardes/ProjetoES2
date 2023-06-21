@@ -11,9 +11,10 @@
 @inject IJSRuntime JSRuntime
 
 <h3>Registered Events</h3>
-
-<table class="table">
-    <thead>
+@if (participantEvents.Count != 0 )
+{
+    <table class="table">
+        <thead>
         <tr style="background: #e6dbb9">
             <th>Name</th>
             <th>EventDate</th>
@@ -25,8 +26,8 @@
             <th>State</th>
             <th></th>
         </tr>
-    </thead>
-    <tbody>
+        </thead>
+        <tbody>
         @foreach (var evt in participantEvents)
         {
             <tr>
@@ -46,19 +47,39 @@
                 </td>
             </tr>
         }
-    </tbody>
-</table>
+        </tbody>
+    </table>
+} else
+{
+    <p class="" style="text-align: center; margin-top: 100px; font-size: 20px;">Not registered for any event</p>
 
+}
 @code {
     private List<EventRegistModel> participantEvents;
     private string token;
+    private string userEmail;
+    private Guid userId;
 
     protected override async Task OnInitializedAsync()
     {
-        await ListParticipantEvents();
+          
+        token = await localStorage.GetItemAsync<string>("token");
+
+    // Decode the token and extract user information
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var decodedToken = tokenHandler.ReadJwtToken(token);
+
+    // Extract the user email
+        userEmail = decodedToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+
+    // Get the user ID based on the email
+        userId = await GetUserIdByEmail(userEmail);
+        
+        await ListParticipantEvents(userId);
+        
     }
 
-    private async Task ListParticipantEvents()
+    private async Task ListParticipantEvents(Guid idUser)
     {
         var token = await localStorage.GetItemAsync<string>("token");
 
@@ -68,8 +89,9 @@
 
         if (response.IsSuccessStatusCode)
         {
-            participantEvents = await response.Content.ReadFromJsonAsync<List<EventRegistModel>>();
-            Console.WriteLine($"Total de eventos registrados: {participantEvents.Count}");
+            var pEvents = await response.Content.ReadFromJsonAsync<List<EventRegistModel>>();
+            participantEvents = pEvents.Where(evt => evt.EventInfo.organizer.ID == idUser).ToList();
+           
         }
     }
 
@@ -94,5 +116,20 @@
                 Console.WriteLine("Failed to cancel the event registration.");
             }
         }
+    }
+    private async Task<Guid> GetUserIdByEmail(string email)
+    {
+        var response = await httpClient.GetAsync($"http://localhost:5052/api/User/GetUserByEmail/{email}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var user = await response.Content.ReadFromJsonAsync<UserModel>();
+            if (user != null)
+            {
+                return user.ID;
+            }
+        }
+
+        return Guid.Empty;
     }
 }
