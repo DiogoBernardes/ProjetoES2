@@ -174,7 +174,7 @@ namespace Backend.Controllers
                 
         // GET: api/user
         [HttpGet("GetRoles")]
-        [Authorize(Roles = "Admin,UserManager")]
+        [Authorize(Roles = "Admin,UserManager,User")]
         public async Task<IActionResult> GetRole()
         {
             var roles = await _userRepository.GetRole();

@@ -79,11 +79,9 @@
 
         if (confirm)
         {
-            // Remover o evento da lista localmente
-            participantEvents.Remove(evt);
+            evt.State_Name = "Cancelado";
 
-            // Fazer a chamada para remover o evento no backend
-            var response = await httpClient.DeleteAsync($"http://localhost:5052/api/EventRegist/{evt.ID}");
+            var response = await httpClient.PutAsJsonAsync($"http://localhost:5052/api/EventRegist/Cancel/{evt.ID}", evt);
 
             if (response.IsSuccessStatusCode)
             {
