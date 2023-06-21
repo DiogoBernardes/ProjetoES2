@@ -12,6 +12,5 @@ public class EventRegistModel
     public Guid Ticket_Type_ID { get; set; }
     public string Ticket_Type_Name { get; set; }
     public DateTime Regist_Date { get; set; }
-
-    
+    public EventModel EventInfo { get; set; }
 }

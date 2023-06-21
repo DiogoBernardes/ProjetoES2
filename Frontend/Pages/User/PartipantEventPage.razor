@@ -1,0 +1,98 @@
+@page "/TicketManagement"
+@using Frontend.Models.Event
+@using Blazored.LocalStorage
+@using System.Net.Http.Headers
+@using System.IdentityModel.Tokens.Jwt
+@using System.Security.Claims
+@using Frontend.Models.Event.regist
+@using Frontend.Models.User
+@inject HttpClient httpClient
+@inject ILocalStorageService localStorage
+@inject IJSRuntime JSRuntime
+
+<h3>Registered Events</h3>
+
+<table class="table">
+    <thead>
+        <tr style="background: #e6dbb9">
+            <th>Name</th>
+            <th>EventDate</th>
+            <th>Location</th>
+            <th>Organizer</th>
+            <th>Description</th>
+            <th>Category</th>
+            <th>TicketType</th>
+            <th>State</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var evt in participantEvents)
+        {
+            <tr>
+                <td>@evt.Event_Name</td>
+                <td>@evt.EventInfo.Date_Hour</td>
+                <td>@evt.EventInfo.Localization</td>
+                <td>@evt.EventInfo.organizer.Name</td>
+                <td>@evt.EventInfo.Description</td>
+                <td>@evt.EventInfo.Category.Name</td>
+                <td>@evt.Ticket_Type_Name</td>
+                <td>@evt.State_Name</td>
+                <td>
+                    @if (evt.State_Name == "Confirmado")
+                    {
+                        <button class="btn btn-danger" @onclick="() => CancelEvent(evt)">Cancelar</button>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<EventRegistModel> participantEvents;
+    private string token;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ListParticipantEvents();
+    }
+
+    private async Task ListParticipantEvents()
+    {
+        var token = await localStorage.GetItemAsync<string>("token");
+
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await httpClient.GetAsync("http://localhost:5052/api/EventRegist");
+
+        if (response.IsSuccessStatusCode)
+        {
+            participantEvents = await response.Content.ReadFromJsonAsync<List<EventRegistModel>>();
+            Console.WriteLine($"Total de eventos registrados: {participantEvents.Count}");
+        }
+    }
+
+    private async Task CancelEvent(EventRegistModel evt)
+    {
+        var confirm = await JSRuntime.InvokeAsync<bool>("confirm", new object[] { "Are you sure you want to cancel this event registration?" });
+
+        if (confirm)
+        {
+            // Remover o evento da lista localmente
+            participantEvents.Remove(evt);
+
+            // Fazer a chamada para remover o evento no backend
+            var response = await httpClient.DeleteAsync($"http://localhost:5052/api/EventRegist/{evt.ID}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Event registration canceled successfully.");
+            }
+            else
+            {
+                Console.WriteLine("Failed to cancel the event registration.");
+            }
+        }
+    }
+}

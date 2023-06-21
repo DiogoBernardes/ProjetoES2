@@ -22,10 +22,14 @@
     </div>
     <div style="display: flex; flex-direction: column; align-items: center;">
         <div style="background: #fff; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
-            <p><strong>Localization:</strong> @eventDetails?.Localization</p>
-            <p><strong>Description:</strong> @eventDetails?.Description</p>
-            <p><strong>Capacity:</strong> @eventDetails?.Capacity</p>
-            <p><strong>Category:</strong> @eventDetails?.Category?.Name</p>
+            <strong>Localization:</strong>
+            <p>@eventDetails?.Localization</p>
+            <strong>Description:</strong>
+            <p> @eventDetails?.Description</p>
+            <strong>Capacity:</strong>
+            <p> @eventDetails?.Capacity</p>
+            <strong>Category:</strong> 
+            <p>@eventDetails?.Category?.Name</p>
         </div>
         <div style="background: #0a53be; color: #fff; padding: 10px; border-radius: 5px; margin-bottom: 10px; text-align: center;">
             Organizer Name: @eventDetails?.organizer.Name

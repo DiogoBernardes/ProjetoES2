@@ -13,4 +13,6 @@ public interface IEventRegistRepository
     Task<int> DeleteEventRegist(Guid id);
     Task<List<Guid>> GetEventRegistIdsByEvent(Guid eventId);
     Task<List<EventRegistModel>> GetAllRegistsOnEvent(Guid id);
+    Task<List<EventRegistModel>> GetEventRegistByParticipant(Guid participantId);
+    Task<List<EventRegistModel>> GetEventsByUser(Guid userId);
 }

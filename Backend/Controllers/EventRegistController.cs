@@ -148,5 +148,23 @@ namespace Backend.Controllers
             return NoContent();
         }
         
+        // GET: api/EventRegist/GetEventRegistByParticipant/{participantId}
+        [HttpGet("GetEventRegistByParticipant/{participantId}")]
+        [Authorize(Roles = "Admin, UserManager,User")]
+        public async Task<IActionResult> GetEventRegistByParticipant(Guid participantId)
+        {
+            var eventRegists = await _eventRegistRepository.GetEventRegistByParticipant(participantId);
+            return Ok(eventRegists);
+        }
+        
+        // GET: api/EventRegist/GetEventsByUser/{userId}
+        [HttpGet("GetEventsByUser/{userId}")]
+        [Authorize(Roles = "Admin, UserManager, User")]
+        public async Task<IActionResult> GetEventsByUser(Guid userId)
+        {
+            var userEvents = await _eventRegistRepository.GetEventsByUser(userId);
+            return Ok(userEvents);
+        }
+
     }
 }
