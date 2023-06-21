@@ -66,7 +66,7 @@ builder.Services.AddScoped<IEventRegistRepository, EventRegistRepository>();
 builder.Services.AddScoped<IActivityRepository, ActivityRepository>();
 builder.Services.AddScoped<IActivityParticipantRepository, ActivityParticipantRepository>();
 builder.Services.AddScoped<IMessageRepository, MessagesRepository>();
-
+builder.Services.AddScoped<IRegistStateRepository, RegistStateRepository>();
 
 
 builder.Services.AddAuthorization();

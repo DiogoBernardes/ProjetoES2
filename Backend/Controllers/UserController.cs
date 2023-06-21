@@ -120,7 +120,7 @@ namespace Backend.Controllers
         
         // PUT: api/user/{id}
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin,UserManager, User")]
+        [Authorize(Roles = "Admin,UserManager,User")]
         public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UpdateUserModel updatedUser)
         {
             if (id != updatedUser.ID)
@@ -174,7 +174,7 @@ namespace Backend.Controllers
                 
         // GET: api/user
         [HttpGet("GetRoles")]
-        [Authorize(Roles = "Admin, UserManager, User")]
+        [Authorize(Roles = "Admin,UserManager")]
         public async Task<IActionResult> GetRole()
         {
             var roles = await _userRepository.GetRole();
@@ -183,6 +183,7 @@ namespace Backend.Controllers
         
         // GET: api/user
         [HttpGet("GetUserByEmail/{email}")]
+        [Authorize(Roles = "Admin,UserManager,User")]
         public async Task<IActionResult> GetUserByEmail(string email)
         {
             var user = await _userRepository.GetUserByEmail(email);

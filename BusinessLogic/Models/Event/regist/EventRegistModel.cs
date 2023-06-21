@@ -1,4 +1,4 @@
-namespace BusinessLogic.Models.Event;
+namespace BusinessLogic.Models.Event.regist;
 
 public class EventRegistModel
 {

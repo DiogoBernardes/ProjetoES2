@@ -4,6 +4,7 @@
 @using System.Net.Http.Headers
 @using System.IdentityModel.Tokens.Jwt
 @using System.Security.Claims
+@using Frontend.Models.Event.regist
 @using System.Text
 @using Frontend.Models.Event.regist
 @using Frontend.Models.Event.Ticket
@@ -32,44 +33,35 @@
     </div>
 </div>
 
-
-
-@if (eventDetails?.Tickets != null)
-{
-    <div>
-        <h4>Ticket Prices</h4>
-        <div class="form-group">
-            <label for="ticketSelection">Select a Ticket:</label>
-            <select id="ticketSelection" class="form-control" @bind="@selectedTicketId">
-                <option value="">Choose a ticket</option>
-                @foreach (var ticket in eventDetails.Tickets)
-                {
-                    <option value="@ticket.TicketType.Name">@ticket.TicketType.Name</option>
-                }
-            </select>
-        </div>
-        @if (!string.IsNullOrEmpty(selectedTicketId))
+<div class="form-group">
+    <label for="tickettype">Ticket Type:</label>
+    <select id="tickettype" class="form-control" @bind="selectedTicketId">
+        @foreach (var _ticket in ticket_type)
         {
-            var selectedTicket = eventDetails.Tickets.FirstOrDefault(t => t.TicketType.Name == selectedTicketId);
-            if (selectedTicket != null)
-            {
-                <p style="background: #e6dbb9">Price: @selectedTicket.Price</p>
-            }
+            <option value="@_ticket.TicketType.ID">@_ticket.TicketType.Name @_ticket.Price</option>
         }
-    </div>
-    <button class="btn btn-danger">Cancelar</button>
-    <button class="btn btn-primary" @onclick="RegisterUserForEvent">Confirmar</button>
-}
+    </select>
+</div>
+
+
+<div class="mt-3">
+<button class="btn btn-danger" @onclick="CancelRegistration">Cancelar</button>
+<button class="btn btn-primary" @onclick="RegisterUserForEvent">Confirmar</button>
+</div>
 
 @code {
     private EventModel eventDetails;
     private Guid eventId;
-    private string selectedTicketId;
     private string token;
+    private Guid selectedTicketId;
     private string userEmail;
     private Guid userId;
-    private EventRegistModel newRegist;
-
+    private CreateEventRegistModal newRegist = new();
+    private EventTicketModel detailsTicket = new();
+    private CreateEventTicketModel newEventTicket = new();
+    private List<EventTicketModel>? ticket_type = new();
+    private string errorMessage;
+    
     [Parameter]
     public string EventId
     {
@@ -87,27 +79,32 @@
     protected override async Task OnInitializedAsync()
     {
         if (eventId != Guid.Empty)
-        {
-            await LoadEventDetails(eventId);
+        {   await LoadTicketPrices(eventId);
+            if (eventDetails != null)
+            {
+                await LoadEventDetails(eventId);
+             
+            }
+            else
+            {
+                // Handle null eventDetails object
+            }
         }
-        
+
         token = await localStorage.GetItemAsync<string>("token");
 
-    // Decodificar o token e extrair as informações do utilizador
+        // Decode the token and extract user information
         var tokenHandler = new JwtSecurityTokenHandler();
         var decodedToken = tokenHandler.ReadJwtToken(token);
 
-    // Extrair o email do utilizador
+        // Extract the user email
         userEmail = decodedToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
 
-    // Obter o ID do utilizador com base no email
+        // Get the user ID based on the email
         userId = await GetUserIdByEmail(userEmail);
 
-    // Atribuir o valor do userId ao Organizer_ID
-        newRegist = new EventRegistModel();
-        newRegist.Participant_ID = userId;
+        
     }
-    
 
     private async Task<Guid> GetUserIdByEmail(string email)
     {
@@ -136,11 +133,11 @@
         if (response.IsSuccessStatusCode)
         {
             eventDetails = await response.Content.ReadFromJsonAsync<EventModel>();
-            await LoadTicketPrices(eventId);
+            
         }
         else
         {
-            // erro
+            // Handle error
         }
     }
 
@@ -150,41 +147,78 @@
 
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
+        if (eventId == Guid.Empty)
+        {
+            Console.WriteLine("Nenhum ID de evento foi fornecido.");
+            return;
+        }
+
         var response = await httpClient.GetAsync($"http://localhost:5052/api/EventTicket/GetEventTicketsByEvent/{eventId}");
 
         if (response.IsSuccessStatusCode)
         {
             var eventTickets = await response.Content.ReadFromJsonAsync<List<EventTicketModel>>();
-            eventDetails.Tickets = eventTickets;
+            ticket_type = eventTickets;
+            selectedTicketId = ticket_type.FirstOrDefault()?.TicketType?.ID ?? Guid.Empty;
+
         }
         else
         {
-            // erro
+    // Handle error
         }
     }
-    
+
     private async Task RegisterUserForEvent()
     {
-        var eventRegist = new CreateEventRegistModal
+        var stateId = await GetStateIdByName("Confirmado");
+        if (stateId != Guid.Empty)
         {
-            Event_ID = eventId,
-            Participant_ID = userId,
-            State_ID = Guid.Parse("85273b77-8f6c-4431-b155-f3c2b3c80f66"), // Ajuste de acordo com a lógica de negócios
-            Ticket_Type_ID = Guid.Parse(selectedTicketId)
-        };
+            newRegist = new CreateEventRegistModal()
+            {
+                Event_ID = eventId,
+                Participant_ID = userId,
+                State_ID = stateId,
+                Ticket_Type_ID = selectedTicketId,
+                regist_date = DateTime.Now.ToUniversalTime()
+                
+            };
 
+            var token = await localStorage.GetItemAsync<string>("token");
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await httpClient.PostAsJsonAsync("http://localhost:5052/api/EventRegist", newRegist);
+
+            if (response.IsSuccessStatusCode)
+            {
+                navigationManager.NavigateTo("/Events"); // Redirect to events page or any other page as needed
+            }
+        }
+        else
+        {
+            Console.WriteLine("stateId is null.");
+        }
+    }
+
+    private async Task<Guid> GetStateIdByName(string stateName)
+    {
         var token = await localStorage.GetItemAsync<string>("token");
+
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-        var response = await httpClient.PostAsJsonAsync("http://localhost:5052/api/EventRegist", eventRegist);
+        var response = await httpClient.GetAsync($"http://localhost:5052/api/RegistState/GetStateIdByName/{stateName}");
 
         if (response.IsSuccessStatusCode)
         {
-            navigationManager.NavigateTo("/events"); // Redirecionar para a página de eventos ou outra página conforme necessário
+            var stateId = await response.Content.ReadFromJsonAsync<Guid>();
+            return stateId;
         }
-        else
-        {
-        // Lidar com o erro conforme necessário
-        }
+
+        return Guid.Empty;
+    }
+    
+ 
+    private void CancelRegistration()
+    {
+        navigationManager.NavigateTo("/events");
     }
 }

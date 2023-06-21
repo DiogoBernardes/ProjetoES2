@@ -18,7 +18,7 @@ public class EventCategoryController : ControllerBase
 
         // GET: api/Category
         [HttpGet("GetCategories")]
-        [Authorize(Roles = "Admin, UserManager,User")]
+        [Authorize(Roles = "Admin,UserManager,User")]
         public async Task<IActionResult> GetCategories()
         {
             var categories = await _eventCategoryRepository.GetCategories();
@@ -28,7 +28,7 @@ public class EventCategoryController : ControllerBase
 
         // GET: api/Category
         [HttpGet("{id}")]
-        [Authorize(Roles = "Admin, UserManager")]
+        [Authorize(Roles = "Admin,UserManager")]
         public async Task<IActionResult> GetCategory(Guid id)
         {
             var category = await _eventCategoryRepository.GetCategory(id);
@@ -43,7 +43,7 @@ public class EventCategoryController : ControllerBase
 
         // POST: api/Category
         [HttpPost]
-        [Authorize(Roles = "Admin, UserManager,Users")]
+        [Authorize(Roles = "Admin,UserManager,Users")]
         public async Task<IActionResult> CreateCategory([FromBody] EventCategoryModel newCategory)
         {
             if (ModelState.IsValid)

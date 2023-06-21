@@ -1,6 +1,6 @@
 using Frontend.Models.User;
 
-namespace Frontend.Models.Event;
+namespace Frontend.Models.Event.regist;
 
 public class EventRegistModel
 {

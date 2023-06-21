@@ -2,6 +2,7 @@ using Backend.Interface;
 using BusinessLogic.Context;
 using BusinessLogic.Entities;
 using BusinessLogic.Models.Event;
+using BusinessLogic.Models.Event.regist;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Repositories;
@@ -76,14 +77,13 @@ public class EventRegistRepository : IEventRegistRepository
             .ToListAsync();
     }
     
-    public async Task<EventRegistModel> CreateEventRegist(EventRegistModel newRegistration) {
+    public async Task<CreateEventRegistModal> CreateEventRegist(CreateEventRegistModal newRegistration) {
         _context.Set<event_regist>().Add(new event_regist() {
-            id = newRegistration.ID,
             event_id = newRegistration.Event_ID,
             participant_id = newRegistration.Participant_ID,
             state_id = newRegistration.State_ID,
             ticket_type_id = newRegistration.Ticket_Type_ID,
-            regist_date = newRegistration.Regist_Date
+            regist_date = newRegistration.regist_date
         });
         await _context.SaveChangesAsync();
         return newRegistration;

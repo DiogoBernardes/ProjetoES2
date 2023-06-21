@@ -2,6 +2,7 @@ using Backend.Interface;
 using BusinessLogic.Context;
 using BusinessLogic.Entities;
 using BusinessLogic.Models.Event;
+using BusinessLogic.Models.Event.regist;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -32,6 +33,7 @@ namespace Backend.Controllers
         }
 
         [HttpGet("api/EventRegistration/GetAllRegistsOnEvent/{id}")]
+        [Authorize(Roles = "Admin, UserManager,User")]
         public async Task<List<EventRegistModel>> GetAllRegistsOnEvent(Guid id)
         {
             return await _eventRegistRepository.GetAllRegistsOnEvent(id);
@@ -54,7 +56,7 @@ namespace Backend.Controllers
         
         // GET: api/EventRegist/GetEventRegistByEvent/{eventId}
         [HttpGet("GetEventRegistByEvent/{eventId}")]
-        [Authorize(Roles = "Admin, UserManager")]
+        [Authorize(Roles = "Admin, UserManager, User")]
         public async Task<IActionResult> GetEventRegistByEvent(Guid eventId)
         {
             var eventRegistIds = await _eventRegistRepository.GetEventRegistIdsByEvent(eventId);
@@ -64,7 +66,7 @@ namespace Backend.Controllers
         // POST: api/EventRegist
         [HttpPost]
         [Authorize(Roles = "Admin, UserManager,User")]
-        public async Task<IActionResult> CreateEventRegist([FromBody] EventRegistModel newRegist)
+        public async Task<IActionResult> CreateEventRegist([FromBody] CreateEventRegistModal newRegist)
         {
             if (ModelState.IsValid)
             {
