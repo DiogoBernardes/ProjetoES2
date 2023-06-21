@@ -41,7 +41,6 @@
     <table class="table">
         <thead>
             <tr>
-                <th>ID</th>
                 <th>Organizer Name</th>
                 <th>Name</th>
                 <th>Date/Time</th>
@@ -57,7 +56,6 @@
             @foreach (var evt in filteredEvents)
             {
                 <tr>
-                    <td>@evt.ID</td>
                     <td>@evt.organizer.Name</td>
                     <td>@evt.Name</td>
                     <td>@evt.Date_Hour</td>

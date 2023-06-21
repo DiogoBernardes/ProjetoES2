@@ -15,4 +15,5 @@ public interface IEventRegistRepository
     Task<List<EventRegistModel>> GetAllRegistsOnEvent(Guid id);
     Task<List<EventRegistModel>> GetEventRegistByParticipant(Guid participantId);
     Task<List<EventRegistModel>> GetEventsByUser(Guid userId);
+    Task CancelEventRegist(Guid id);
 }

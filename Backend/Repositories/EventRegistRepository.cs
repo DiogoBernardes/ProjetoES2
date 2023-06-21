@@ -195,4 +195,20 @@ public class EventRegistRepository : IEventRegistRepository
             })
             .ToListAsync();
     }
+    
+    public async Task CancelEventRegist(Guid id)
+    {
+        var existingRegistration = await _context.event_regists.FirstOrDefaultAsync(u => u.id == id);
+
+        if (existingRegistration == null)
+        {
+            throw new ArgumentException("Registration not found");
+        }
+
+        existingRegistration.state_id = Guid.Parse("a58bff63-4dae-434d-80ae-e9038e5a193c"); // Assuming "Cancelled" is represented by this guid
+
+        await _context.SaveChangesAsync();
+    }
+    
+    
 }
