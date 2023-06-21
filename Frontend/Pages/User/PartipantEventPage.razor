@@ -81,11 +81,13 @@
         {
             evt.State_Name = "Cancelado";
 
-            var response = await httpClient.PutAsJsonAsync($"http://localhost:5052/api/EventRegist/Cancel/{evt.ID}", evt);
+            var request = new HttpRequestMessage(new HttpMethod("PATCH"), $"http://localhost:5052/api/EventRegist/Cancel/{evt.ID}");
+            var response = await httpClient.SendAsync(request);
 
             if (response.IsSuccessStatusCode)
             {
                 Console.WriteLine("Event registration canceled successfully.");
+                await ListParticipantEvents();  // Recarregar os eventos após o cancelamento
             }
             else
             {
