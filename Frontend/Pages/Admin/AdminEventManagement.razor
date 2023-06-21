@@ -8,41 +8,99 @@
 @inject NavigationManager navigationManager
 @inject IJSRuntime jsRuntime
 
+<style>
+    .event-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .event-table thead tr {
+        background-color: #e6dbb9;
+    }
+
+    .event-table th,
+    .event-table td {
+        padding: 10px;
+        text-align: left;
+    }
+
+    .event-table th:last-child,
+    .event-table td:last-child {
+        text-align: center;
+    }
+
+    .event-table tbody tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    .event-table tbody tr:hover {
+        background-color: #e0e0e0;
+    }
+
+    .edit-button {
+        background-color: #007bff;
+        color: white;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .edit-button:hover {
+        background-color: #0056b3;
+    }
+
+    .remove-button {
+        background-color: #dc3545;
+        color: white;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .remove-button:hover {
+        background-color: #b02a37;
+    }
+</style>
+
 <h3>Event Management (Admin)</h3>
 
 @if (events != null && events.Count > 0)
 {
-    <table class="table">
+    <table class="event-table">
         <thead>
-            <tr>
-                <th>ID</th>
-                <th>Organizer Name</th>
-                <th>Name</th>
-                <th>Date/Time</th>
-                <th>Localization</th>
-                <th>Description</th>
-                <th>Capacity</th>
-                <th>Category</th>
-                <th></th>
-                <th></th>
-            </tr>
+        <tr>
+            <th>ID</th>
+            <th>Organizer Name</th>
+            <th>Name</th>
+            <th>Date/Time</th>
+            <th>Localization</th>
+            <th>Description</th>
+            <th>Capacity</th>
+            <th>Category</th>
+            <th></th>
+            <th></th>
+        </tr>
         </thead>
         <tbody>
-            @foreach (var evt in events)
-            {
-                <tr>
-                    <td>@evt.ID</td>
-                    <td>@evt.organizer.Name</td>
-                    <td>@evt.Name</td>
-                    <td>@evt.Date_Hour</td>
-                    <td>@evt.Localization</td>
-                    <td>@evt.Description</td>
-                    <td>@evt.Capacity</td>
-                    <td>@evt.Category.Name</td>
-                    <td><button class="btn btn-primary" @onclick="() => EditEvent(evt)">Edit</button></td>
-                    <td><button class="btn btn-danger" @onclick="() => RemoveEvent(evt)">Remove</button></td>
-                </tr>
-            }
+        @foreach (var evt in events)
+        {
+            <tr>
+                <td>@evt.ID</td>
+                <td>@evt.organizer.Name</td>
+                <td>@evt.Name</td>
+                <td>@evt.Date_Hour</td>
+                <td>@evt.Localization</td>
+                <td>@evt.Description</td>
+                <td>@evt.Capacity</td>
+                <td>@evt.Category.Name</td>
+                <td><button class="edit-button" @onclick="() => EditEvent(evt)">Edit</button></td>
+                <td><button class="remove-button" @onclick="() => RemoveEvent(evt)">Remove</button></td>
+            </tr>
+        }
         </tbody>
     </table>
 }
@@ -96,7 +154,6 @@ else
         </div>
     </div>
 }
-
 @code {
     private List<EventModel> events;
     private List<EventCategoryModel> categories;

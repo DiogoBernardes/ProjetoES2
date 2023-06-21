@@ -10,21 +10,57 @@
 @inject NavigationManager navigationManager
 
 <style>
-    .custom-details {
+    .user-details-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-color: #d7d7d7;
+        padding: 50px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        margin-left: 120px;
+        margin-right: 120px;
+    }
+
+    .user-details-title {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 30px;
+        
+    }
+
+    .user-detail {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
         margin-bottom: 20px;
     }
-    
-    .custom-details label {
+
+    .detail-label {
         font-weight: bold;
+        margin-right: 10px;
+        color: #333;
     }
-    
-    .custom-btn {
+
+    .detail-value {
+        color: #777;
+    }
+
+    .edit-button {
         background-color: #007bff;
-        color: #fff;
-        padding: 8px 12px;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
         border: none;
-        border-radius: 4px;
         cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
+    }
+
+    .edit-button:hover {
+        background-color: #0056b3;
     }
 </style>
 
@@ -32,34 +68,43 @@
 
 @if (users != null)
 {
-    <div class="custom-details" style="padding-top: 30px">
-        <label>Name:</label>
-        <div>@users.Name</div>
+    <div class="user-details-container">
+        <h3 class="user-details-title">User Details</h3>
+    
+        <div class="user-detail">
+            <span class="detail-label">Name:</span>
+            <span class="detail-value">@users.Name</span>
+        </div>
+    
+        <div class="user-detail">
+            <span class="detail-label">Username:</span>
+            <span class="detail-value">@users.Username</span>
+        </div>
+    
+        <div class="user-detail">
+            <span class="detail-label">Email:</span>
+            <span class="detail-value">@users.Email</span>
+        </div>
+    
+        <div class="user-detail">
+            <span class="detail-label">Phone:</span>
+            <span class="detail-value">@users.Phone</span>
+        </div>
+    
+        <div class="user-detail">
+            <span class="detail-label">Password:</span>
+            <span class="detail-value" type="password">********</span>
+        </div>
+
+    
+        <button class="edit-button" @onclick="() => EditUser(users)">Edit</button>
     </div>
-    <div class="custom-details">
-        <label>Username:</label>
-        <div>@users.Username</div>
-    </div>
-    <div class="custom-details">
-        <label>Email:</label>
-        <div>@users.Email</div>
-    </div>
-    <div class="custom-details">
-        <label>Phone:</label>
-        <div>@users.Phone</div>
-    </div>
-    <div class="custom-details">
-        <label>Password:</label>
-        <div>@users.Password</div>
-    </div>
-    <button class="btn btn-primary custom-btn" @onclick="() => EditUser(users)">Edit</button>
+    
 }
 else
 {
     <p>Error fetching users.</p>
 }
-
-
 @code {
 
     private UpdateEventModel newEvent = new();

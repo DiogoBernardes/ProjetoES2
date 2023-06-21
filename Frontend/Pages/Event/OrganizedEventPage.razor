@@ -10,15 +10,101 @@
 @inject NavigationManager navigationManager
 @inject IJSRuntime jsRuntime
 
+<style>
+    .event-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .event-table thead tr {
+        background-color: #e6dbb9;
+    }
+
+    .event-table th,
+    .event-table td {
+        padding: 10px;
+        text-align: left;
+    }
+
+    .event-table th:last-child,
+    .event-table td:last-child {
+        text-align: center;
+    }
+
+    .event-table tbody tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    .event-table tbody tr:hover {
+        background-color: #e0e0e0;
+    }
+
+    .edit-button {
+        background-color: #007bff;
+        color: white;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .edit-button:hover {
+        background-color: #0056b3;
+    }
+
+    .remove-button {
+        background-color: #dc3545;
+        color: white;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .remove-button:hover {
+        background-color: #b02a37;
+    }
+
+    .tickets-button {
+        background-color: #17a2b8;
+        color: white;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .tickets-button:hover {
+        background-color: #128da5;
+    }
+
+    .participants-button {
+        background-color: #343a40;
+        color: white;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .participants-button:hover {
+        background-color: #2a2f33;
+    }
+</style>
+
 <h3>Organized Event Page</h3>
 
-<button class="btn btn-success" @onclick="CreateEvent">Create Event</button>
+
 
 @if (events != null && events.Count > 0)
 {
-    <table class="table">
+    <table class="event-table">
         <thead>
-        <tr style="background: #e6dbb9"> 
+        <tr>
             <th>Name</th>
             <th>Date/Time</th>
             <th>Localization</th>
@@ -41,14 +127,16 @@
                 <td>@evt.Description</td>
                 <td>@evt.Capacity</td>
                 <td>@evt.Category.Name</td>
-                <td><button class="btn btn-primary" @onclick="() => EditEvent(evt)">Edit</button></td>
-                <td><button class="btn btn-danger" @onclick="() => RemoveEvent(evt)">Remove</button></td>
-                <td><button class="btn btn-info" @onclick="() => GetTicketsFromEvent(evt.ID)">Tickets</button></td>
-                <td><button class="btn btn-dark" @onclick="() => GetEventRegistrations(evt.ID)">Participants</button></td>
+                <td><button class="edit-button" @onclick="() => EditEvent(evt)">Edit</button></td>
+                <td><button class="remove-button" @onclick="() => RemoveEvent(evt)">Remove</button></td>
+                <td><button class="tickets-button" @onclick="() => GetTicketsFromEvent(evt.ID)">Tickets</button></td>
+                <td><button class="participants-button" @onclick="() => GetEventRegistrations(evt.ID)">Participants</button></td>
             </tr>
         }
         </tbody>
     </table>
+    
+    <button style="margin-top: 10px" class="btn btn-success" @onclick="CreateEvent">Create Event</button>
 }
     @if (showTicketTable)
     {
@@ -144,8 +232,6 @@
         <button class="btn btn-secondary" @onclick="HideParticipantTable">Close</button>
  
 }
-
-
 @code {
     private List<EventModel> events;
     private List<EventTicketModel> eventTickets;

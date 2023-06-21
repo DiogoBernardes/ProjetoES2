@@ -8,6 +8,50 @@
 @inject ILocalStorageService localStorage
 @inject NavigationManager navigationManager
 
+<style>
+    .event-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .event-table thead tr {
+        background-color: #e6dbb9;
+    }
+
+    .event-table th,
+    .event-table td {
+        padding: 10px;
+        text-align: left;
+    }
+
+    .event-table th:last-child,
+    .event-table td:last-child {
+        text-align: center;
+    }
+
+    .event-table tbody tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    .event-table tbody tr:hover {
+        background-color: #e0e0e0;
+    }
+
+    .event-button {
+        background-color: #007bff;
+        color: white;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .event-button:hover {
+        background-color: #0056b3;
+    }
+</style>
+
 <h3>Events</h3>
 
 <div class="form-group">
@@ -33,41 +77,40 @@
 </div>
 
 <div class="form-group">
-    <button class="btn btn-primary" @onclick="SearchEvents">Search</button>
+    <button style="margin-top: 7px; margin-bottom: 7px" class="btn btn-primary" @onclick="SearchEvents">Search</button>
 </div>
 
 @if (filteredEvents != null && filteredEvents.Count > 0)
 {
-    <table class="table">
+    <table class="event-table">
         <thead>
-            <tr>
-                <th>Organizer Name</th>
-                <th>Name</th>
-                <th>Date/Time</th>
-                <th>Localization</th>
-                <th>Description</th>
-                <th>Capacity</th>
-                <th>Category</th>
-                <th></th>
-                <th></th>
-            </tr>
+        <tr>
+            <th>Organizer Name</th>
+            <th>Name</th>
+            <th>Date/Time</th>
+            <th>Localization</th>
+            <th>Description</th>
+            <th>Capacity</th>
+            <th>Category</th>
+            <th></th>
+        </tr>
         </thead>
         <tbody>
-            @foreach (var evt in filteredEvents)
-            {
-                <tr>
-                    <td>@evt.organizer.Name</td>
-                    <td>@evt.Name</td>
-                    <td>@evt.Date_Hour</td>
-                    <td>@evt.Localization</td>
-                    <td>@evt.Description</td>
-                    <td>@evt.Capacity</td>
-                    <td>@evt.Category.Name</td>
-                    <td>
-                        <button class="btn btn-primary" @onclick="() => OpenEventDetails(evt.ID)">Inscrever</button>
-                    </td>
-                </tr>
-            }
+        @foreach (var evt in filteredEvents)
+        {
+            <tr>
+                <td>@evt.organizer.Name</td>
+                <td>@evt.Name</td>
+                <td>@evt.Date_Hour</td>
+                <td>@evt.Localization</td>
+                <td>@evt.Description</td>
+                <td>@evt.Capacity</td>
+                <td>@evt.Category.Name</td>
+                <td>
+                    <button class="event-button" @onclick="() => OpenEventDetails(evt.ID)">Inscrever</button>
+                </td>
+            </tr>
+        }
         </tbody>
     </table>
 }
@@ -75,7 +118,6 @@ else
 {
     <p>No events available.</p>
 }
-
 @code {
     private List<EventModel> events;
     private List<EventModel> filteredEvents;

@@ -7,45 +7,101 @@
 @inject NavigationManager navigationManager
 @inject IJSRuntime jsRuntime
 
-<h3>UserManagement</h3>
-
-@if (users != null)
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th></th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var user in users)
-            {
-                <tr>
-                    <td>@user.ID</td>
-                    <td>@user.Name</td>
-                    <td>@user.Username</td>
-                    <td>@user.Email</td>
-                    <td>@user.Phone</td>
-                    <td><button class="btn btn-primary" @onclick="() => EditUser(user)">Edit</button></td>
-                    <td><button class="btn btn-danger" @onclick="() => RemoveUser(user)">Remove</button></td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
-else
-{
-    <p>Error fetching users.</p>
-}
-
-<button class="btn btn-success" @onclick="CreateUser">Create User</button>
-
+<style>
+     .user-table {
+         width: 100%;
+         border-collapse: collapse;
+     }
+ 
+     .user-table thead tr {
+         background-color: #e6dbb9;
+     }
+ 
+     .user-table th,
+     .user-table td {
+         padding: 10px;
+         text-align: left;
+     }
+ 
+     .user-table th:last-child,
+     .user-table td:last-child {
+         text-align: center;
+     }
+ 
+     .user-table tbody tr:nth-child(even) {
+         background-color: #f2f2f2;
+     }
+ 
+     .user-table tbody tr:hover {
+         background-color: #e0e0e0;
+     }
+ 
+     .edit-button {
+         background-color: #007bff;
+         color: white;
+         padding: 8px 16px;
+         border: none;
+         border-radius: 4px;
+         cursor: pointer;
+         transition: background-color 0.3s ease;
+     }
+ 
+     .edit-button:hover {
+         background-color: #0056b3;
+     }
+ 
+     .remove-button {
+         background-color: #dc3545;
+         color: white;
+         padding: 8px 16px;
+         border: none;
+         border-radius: 4px;
+         cursor: pointer;
+         transition: background-color 0.3s ease;
+     }
+ 
+     .remove-button:hover {
+         background-color: #b02a37;
+     }
+ </style>
+ 
+ 
+ @if (users != null)
+ {
+     <table class="user-table">
+         <thead>
+         <tr>
+             <th>ID</th>
+             <th>Name</th>
+             <th>Username</th>
+             <th>Email</th>
+             <th>Phone</th>
+             <th></th>
+             <th></th>
+         </tr>
+         </thead>
+         <tbody>
+         @foreach (var user in users)
+         {
+             <tr>
+                 <td>@user.ID</td>
+                 <td>@user.Name</td>
+                 <td>@user.Username</td>
+                 <td>@user.Email</td>
+                 <td>@user.Phone</td>
+                 <td><button class="edit-button" @onclick="() => EditUser(user)">Edit</button></td>
+                 <td><button class="remove-button" @onclick="() => RemoveUser(user)">Remove</button></td>
+             </tr>
+         }
+         </tbody>
+     </table>
+ }
+ else
+ {
+     <p>Error fetching users.</p>
+ }
+ 
+ <button class="btn btn-success" @onclick="CreateUser">Create User</button>
 @code {
     private List<UserModel> users;
     private UserModel userToEdit;

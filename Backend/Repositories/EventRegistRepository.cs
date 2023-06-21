@@ -13,10 +13,12 @@ public class EventRegistRepository : IEventRegistRepository
 {
     
     private readonly ES2DbContext _context;
+    private readonly IRegistStateRepository _registStateRepository;
 
-    public EventRegistRepository(ES2DbContext context)
+    public EventRegistRepository(ES2DbContext context, IRegistStateRepository registStateRepository)
     {
         _context = context;
+        _registStateRepository = registStateRepository;
     }
     
     public async Task<List<EventRegistModel>> GetEventsRegist() {
@@ -205,10 +207,27 @@ public class EventRegistRepository : IEventRegistRepository
             throw new ArgumentException("Registration not found");
         }
 
-        existingRegistration.state_id = Guid.Parse("a58bff63-4dae-434d-80ae-e9038e5a193c"); // Assuming "Cancelled" is represented by this guid
+        // fetch state id from state name
+        var cancelledStateId = await _registStateRepository.GetStateIdByName("Cancelado");
+
+        existingRegistration.state_id = cancelledStateId; // using the state id fetched from state name
 
         await _context.SaveChangesAsync();
     }
+    
+    public async Task<Guid> GetStateIdByName(string stateName)
+    {
+        var states = await _context.Set<regist_state>().ToListAsync();
+
+        var state = states.FirstOrDefault(s => s.state.Equals(stateName, StringComparison.OrdinalIgnoreCase));
+
+        if (state == null)
+        {
+            throw new InvalidOperationException("State not found");
+        }
+
+        return state.id;
+    }   
     
     
 }

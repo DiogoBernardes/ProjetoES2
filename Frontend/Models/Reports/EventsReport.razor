@@ -1,0 +1,117 @@
+@page "/EventsReport"
+@using Frontend.Models.Event
+@using System.Net.Http
+@using Frontend.Models.Event.regist
+@using MatBlazor
+@inject HttpClient httpClient
+
+<h3>EventsReport</h3>
+
+@if (events != null)
+{
+    <h4>Number of Events by Category:</h4>
+    <table class="event-table">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var category in events.GroupBy(e => e.Category))
+            {
+                <tr>
+                    <td>@category.Key.Name</td>
+                    <td>@category.Count()</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h4>Most Popular Events:</h4>
+    <ul class="event-list">
+        @foreach (var eventModel in mostPopular)
+        {
+            <li>@eventModel.Name</li>
+        }
+    </ul>
+
+    <p class="total-registrations">Total Registrations: @totalRegistrations</p>
+}
+else
+{
+    <p>Loading...</p>
+}
+
+<style>
+    .event-table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    .event-table th,
+    .event-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+    }
+
+    .event-table th {
+        background-color: #f2f2f2;
+        text-align: left;
+    }
+
+    .event-list {
+        list-style-type: none;
+        padding: 0;
+        margin-top: 16px;
+    }
+
+    .event-list li {
+        margin-bottom: 8px;
+    }
+
+    .total-registrations {
+        margin-top: 16px;
+        font-weight: bold;
+        color: #555;
+    }
+</style>
+
+@code {
+    private List<EventModel> events = null;
+    private int totalRegistrations = 0;
+    private List<EventModel> mostPopular = null;
+    private List<EventRegistModel> registrations = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetEvents();
+        await GetRegistrations();
+
+        // Calculate the total registrations
+        totalRegistrations = registrations?.Count ?? 0;
+
+        // Find the most popular events
+        mostPopular = events.OrderByDescending(e => e.Tickets.Sum(t => t.Quantity)).Take(5).ToList();
+    }
+
+    private async Task GetEvents()
+    {
+        var response = await httpClient.GetAsync("http://localhost:5052/api/Event");
+
+        if (response.IsSuccessStatusCode)
+        {
+            events = await response.Content.ReadFromJsonAsync<List<EventModel>>();
+        }
+    }
+
+    private async Task GetRegistrations()
+    {
+        var response = await httpClient.GetAsync("http://localhost:5052/api/EventRegist");
+
+        if (response.IsSuccessStatusCode)
+        {
+            registrations = await response.Content.ReadFromJsonAsync<List<EventRegistModel>>();
+        }
+    }
+}

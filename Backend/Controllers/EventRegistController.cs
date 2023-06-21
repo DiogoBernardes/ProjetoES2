@@ -181,6 +181,22 @@ namespace Backend.Controllers
                 return NotFound();
             }
         }
+        
+        // GET: api/RegistState/GetStateIdByName/{stateName}
+        [HttpGet("GetStateIdByName/{stateName}")]
+        [Authorize(Roles = "Admin,UserManager, User")]
+        public async Task<IActionResult> GetStateIdByName(string stateName)
+        {
+            try
+            {
+                var stateId = await _eventRegistRepository.GetStateIdByName(stateName);
+                return Ok(stateId);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
     }
     

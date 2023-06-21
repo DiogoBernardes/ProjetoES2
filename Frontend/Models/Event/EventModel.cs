@@ -17,5 +17,7 @@ namespace Frontend.Models.Event
         public string Organizer_Name { get; set; }
         public List<EventTicketModel> Tickets { get; set; }
         public UserModel organizer { get; set; }
+       
+
     }
 }

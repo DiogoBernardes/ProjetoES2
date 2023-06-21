@@ -10,11 +10,54 @@
 @inject ILocalStorageService localStorage
 @inject IJSRuntime JSRuntime
 
+<style>
+    .participant-events-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .participant-events-table thead tr {
+        background-color: #e6dbb9;
+    }
+
+    .participant-events-table th,
+    .participant-events-table td {
+        padding: 10px;
+        text-align: left;
+    }
+
+    .participant-events-table th:last-child,
+    .participant-events-table td:last-child {
+        text-align: center;
+    }
+
+    .participant-events-table tbody tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    .participant-events-table tbody tr:hover {
+        background-color: #e0e0e0;
+    }
+
+    .cancel-button {
+        background-color: #dc3545;
+        color: white;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .cancel-button:hover {
+        background-color: #b02a37;
+    }
+</style>
+
 <h3>Registered Events</h3>
-@if (participantEvents.Count != 0 )
-{
-    <table class="table">
-        <thead>
+
+<table class="participant-events-table">
+    <thead>
         <tr style="background: #e6dbb9">
             <th>Name</th>
             <th>EventDate</th>
@@ -26,8 +69,8 @@
             <th>State</th>
             <th></th>
         </tr>
-        </thead>
-        <tbody>
+    </thead>
+    <tbody>
         @foreach (var evt in participantEvents)
         {
             <tr>
@@ -42,26 +85,23 @@
                 <td>
                     @if (evt.State_Name == "Confirmado")
                     {
-                        <button class="btn btn-danger" @onclick="() => CancelEvent(evt)">Cancelar</button>
+                        <button class="cancel-button" @onclick="() => CancelEvent(evt)">Cancelar</button>
                     }
                 </td>
             </tr>
         }
-        </tbody>
-    </table>
-} else
-{
-    <p class="" style="text-align: center; margin-top: 100px; font-size: 20px;">Not registered for any event</p>
+    </tbody>
+</table>
 
 @code {
     private List<EventRegistModel> participantEvents;
     private string token;
+    
     private string userEmail;
     private Guid userId;
 
     protected override async Task OnInitializedAsync()
     {
-          
         token = await localStorage.GetItemAsync<string>("token");
 
     // Decode the token and extract user information
@@ -73,9 +113,7 @@
 
     // Get the user ID based on the email
         userId = await GetUserIdByEmail(userEmail);
-        
         await ListParticipantEvents(userId);
-        
     }
 
     private async Task ListParticipantEvents(Guid idUser)
@@ -89,8 +127,8 @@
         if (response.IsSuccessStatusCode)
         {
             var pEvents = await response.Content.ReadFromJsonAsync<List<EventRegistModel>>();
-            participantEvents = pEvents.Where(evt => evt.EventInfo.organizer.ID == idUser).ToList();
-           
+            participantEvents = pEvents.Where(evt => evt.Participant_ID == idUser).ToList();
+            Console.WriteLine($"Total de eventos registrados: {participantEvents.Count}");
         }
     }
 
@@ -108,7 +146,7 @@
             if (response.IsSuccessStatusCode)
             {
                 Console.WriteLine("Event registration canceled successfully.");
-                await ListParticipantEvents();  // Recarregar os eventos após o cancelamento
+                await ListParticipantEvents(userId);  // Recarregar os eventos apÃ³s o cancelamento
             }
             else
             {
@@ -116,6 +154,7 @@
             }
         }
     }
+    
     private async Task<Guid> GetUserIdByEmail(string email)
     {
         var response = await httpClient.GetAsync($"http://localhost:5052/api/User/GetUserByEmail/{email}");
