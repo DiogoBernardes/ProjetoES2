@@ -65,11 +65,23 @@
     <button class="btn btn-primary" @onclick="CreateUserAsync">Create</button>
 </div>
 
+    @if (!string.IsNullOrEmpty(errorMessage) && string.IsNullOrEmpty(sucessMessage))
+       {
+           <div class="alert alert-danger">@errorMessage</div>
+       }
+       @if (string.IsNullOrEmpty(errorMessage) && !string.IsNullOrEmpty(sucessMessage))
+       {
+           <div class="alert alert-success">@sucessMessage</div>
+       }
+
+
 @code {
     private CreateUserModel newUser = new CreateUserModel();
     private List<RoleModel> roles;
     private bool UserIsAdmin;
     private bool UserIsUserManager;
+    private string errorMessage;
+    private string sucessMessage;
     
     protected override async Task OnInitializedAsync()
     {
@@ -120,7 +132,8 @@
         }
         else
         {
-            Console.WriteLine("Failed to create user.");
+            errorMessage = "Failed to create user.";
+            sucessMessage = null;
         }
     }
 }

@@ -154,11 +154,25 @@ else
         </div>
     </div>
 }
+
+
+    @if (!string.IsNullOrEmpty(errorMessage) && string.IsNullOrEmpty(sucessMessage))
+       {
+           <div class="alert alert-danger">@errorMessage</div>
+       }
+       @if (string.IsNullOrEmpty(errorMessage) && !string.IsNullOrEmpty(sucessMessage))
+       {
+           <div class="alert alert-success">@sucessMessage</div>
+       }
+
 @code {
     private List<EventModel> events;
     private List<EventCategoryModel> categories;
     private EventModel eventToEdit;
+    private string errorMessage;
+    private string sucessMessage;
 
+    
     protected override async Task OnInitializedAsync()
     {
         await LoadData();
@@ -218,7 +232,8 @@ else
         }
         else
         {
-            Console.WriteLine("Failed to save event.");
+            errorMessage = "Failed to save event.";
+            sucessMessage = null;
         }
     }
 
@@ -244,7 +259,8 @@ else
             }
             else
             {
-                Console.WriteLine("Failed to remove event.");
+                errorMessage = "Failed to remove event.";
+                sucessMessage = null;
             }
         }
     }

@@ -76,6 +76,7 @@
              <th>Username</th>
              <th>Email</th>
              <th>Phone</th>
+             <th>Role</th>
              <th></th>
              <th></th>
          </tr>
@@ -89,6 +90,7 @@
                  <td>@user.Username</td>
                  <td>@user.Email</td>
                  <td>@user.Phone</td>
+                 <td>@user.Role.Name</td>
                  <td><button class="edit-button" @onclick="() => EditUser(user)">Edit</button></td>
                  <td><button class="remove-button" @onclick="() => RemoveUser(user)">Remove</button></td>
              </tr>
@@ -100,11 +102,23 @@
  {
      <p>Error fetching users.</p>
  }
+
+    @if (!string.IsNullOrEmpty(errorMessage) && string.IsNullOrEmpty(sucessMessage))
+       {
+           <div class="alert alert-danger">@errorMessage</div>
+       }
+       @if (string.IsNullOrEmpty(errorMessage) && !string.IsNullOrEmpty(sucessMessage))
+       {
+           <div class="alert alert-success">@sucessMessage</div>
+       }
+
  
- <button class="btn btn-success" @onclick="CreateUser">Create User</button>
+<button class="btn btn-success" @onclick="CreateUser">Create User</button>
 @code {
     private List<UserModel> users;
     private UserModel userToEdit;
+    private string errorMessage;
+    private string sucessMessage;
 
     protected override async Task OnInitializedAsync()
     {
@@ -148,7 +162,8 @@
             }
             else
             {
-                Console.WriteLine("Failed to remove user.");
+                errorMessage = "Failed to remove user.";
+                sucessMessage = null;
             }
         }
     }

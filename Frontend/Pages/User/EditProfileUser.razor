@@ -73,6 +73,15 @@
                 </select>
             }
         </div>
+       @if (!string.IsNullOrEmpty(errorMessage) && string.IsNullOrEmpty(sucessMessage))
+       {
+           <div class="alert alert-danger">@errorMessage</div>
+       }
+       @if (string.IsNullOrEmpty(errorMessage) && !string.IsNullOrEmpty(sucessMessage))
+       {
+           <div class="alert alert-success">@sucessMessage</div>
+       }
+
         <button type="button" class="btn btn-primary custom-btn" @onclick="UpdateUser">Save</button>
     </form>
 
@@ -80,13 +89,15 @@
 
 
 @code {
-    private UpdateUserModel user;
-    private List<RoleModel> roles;
+    private UpdateUserModel user = new();
+    private List<RoleModel> roles = new();
     private bool UserIsAdmin;
     private bool UserIsUserManager;
     [Parameter]
     public string UserId { get; set; }
-
+    private string errorMessage;
+    private string sucessMessage;
+    
     protected override async Task OnInitializedAsync()
     {
         await GetUserDetails();
@@ -116,11 +127,13 @@
 
         if (response.IsSuccessStatusCode)
         {
-            navigationManager.NavigateTo("/index", true);
+            sucessMessage = "User updated successfully!";
+            errorMessage = null;
         }
         else
         {
-            Console.WriteLine("Failed to update user.");
+            errorMessage = "Failed to update user information.";
+            sucessMessage = null;
         }
     }
     

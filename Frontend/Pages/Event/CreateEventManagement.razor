@@ -83,6 +83,15 @@
     </table>
 }
 
+@if (!string.IsNullOrEmpty(errorMessage) && string.IsNullOrEmpty(sucessMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+@if (string.IsNullOrEmpty(errorMessage) && !string.IsNullOrEmpty(sucessMessage))
+{
+    <div class="alert alert-success">@sucessMessage</div>
+}
+
 @code {
     private CreateEventModel newEvent = new();
     private List<EventCategoryModel> categories = new();
@@ -91,6 +100,9 @@
     private Guid userId;
     private bool showCreateCategoryTable = false;
     private CreateCategoryModel newCategory = new();
+    private string errorMessage;
+    private string sucessMessage;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -160,6 +172,8 @@
         else
         {
             Console.WriteLine("Failed to create event.");
+            errorMessage = "Failed to create event.";
+            sucessMessage = null;
         }
     }
 
@@ -186,10 +200,14 @@
         {
             await GetCategories();
             showCreateCategoryTable = false;
+            sucessMessage = "New category saved successfully!";
+            errorMessage = null;
         }
         else
         {
             Console.WriteLine("Failed to save category.");
+            errorMessage = "Failed to save the category.";
+            sucessMessage = null;
         }
     }
 }

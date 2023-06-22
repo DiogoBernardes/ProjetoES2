@@ -47,6 +47,14 @@
     <button class="btn btn-primary" @onclick="CreateEventTicketAsync">Create</button>
 </div>
 
+    @if (!string.IsNullOrEmpty(errorMessage) && string.IsNullOrEmpty(sucessMessage))
+    {
+        <div class="alert alert-danger">@errorMessage</div>
+    }
+    @if (string.IsNullOrEmpty(errorMessage) && !string.IsNullOrEmpty(sucessMessage))
+    {
+        <div class="alert alert-success">@sucessMessage</div>
+    }
 @code {
     private CreateEventTicketModel newEventTicket = new();
     private List<EventModel> events = new();
@@ -55,7 +63,7 @@
     private string userEmail;
     private Guid userId;
     private string errorMessage;
-    
+    private string sucessMessage;
     protected override async Task OnInitializedAsync()
     {
         await GetEvents();
@@ -150,7 +158,8 @@
         }
         else
         {
-            Console.WriteLine("Failed to create event ticket.");
+            errorMessage = "Failed to create Event Ticket.";
+            sucessMessage = null;
         }
     }
 }

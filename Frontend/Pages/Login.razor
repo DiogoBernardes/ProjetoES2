@@ -97,11 +97,11 @@
 
     private string GetRoleFromToken(string token)
     {
-        // Extrair a role do token JWT
+        // Extrair a informação do token JWT
         var handler = new JwtSecurityTokenHandler();
         var decodedToken = handler.ReadJwtToken(token);
 
-        // Obter a reivindicação de role do token
+        // Obter a role do token
         var roleClaim = decodedToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
 
         if (roleClaim != null)

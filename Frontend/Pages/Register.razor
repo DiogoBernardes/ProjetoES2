@@ -55,7 +55,7 @@
 
     private async Task HandleRegisterAsync()
     {
-        registerModel.Role_id = new Guid("b4b09d22-77c4-4587-bf32-35620f1cc320"); // Set the role_id to "USER"
+        registerModel.Role_id = new Guid("49e60d03-d156-4a83-bfe6-da8db3c77e85"); // Set the role_id to "USER"
 
         var response = await httpClient.PostAsJsonAsync("http://localhost:5052/api/User/registration", registerModel);
 

@@ -3,8 +3,10 @@
 @using Blazored.LocalStorage
 @using System.Net.Http.Headers
 @using System.IdentityModel.Tokens.Jwt
+@using System.Security.Claims
 @using Frontend.Models.Event.regist
 @using Frontend.Models.Event.Ticket
+@using Frontend.Models.User
 @inject HttpClient httpClient
 @inject ILocalStorageService localStorage
 @inject NavigationManager navigationManager
@@ -136,8 +138,8 @@
         </tbody>
     </table>
     
-    <button style="margin-top: 10px" class="btn btn-success" @onclick="CreateEvent">Create Event</button>
 }
+<button style="margin-top: 10px" class="btn btn-success" @onclick="CreateEvent">Create Event</button>
     @if (showTicketTable)
     {
         <h4>Ticket Information</h4>
@@ -209,12 +211,12 @@
         <h4>Participants Information</h4>
         <table class="table">
             <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Registration Date</th>
-                    <th>Ticket Type</th>
-                    <th>State</th>
-                </tr>
+            <tr>
+                <th>Name</th>
+                <th>Registration Date</th>
+                <th>Ticket Type</th>
+                <th>State</th>
+            </tr>
             </thead>
             <tbody>
                 @foreach (var regist in eventRegistrations)
@@ -232,24 +234,65 @@
         <button class="btn btn-secondary" @onclick="HideParticipantTable">Close</button>
  
 }
+    @if (!string.IsNullOrEmpty(errorMessage) && string.IsNullOrEmpty(sucessMessage))
+    {
+        <div class="alert alert-danger">@errorMessage</div>
+    }
+    @if (string.IsNullOrEmpty(errorMessage) && !string.IsNullOrEmpty(sucessMessage))
+    {
+        <div class="alert alert-success">@sucessMessage</div>
+    }
 @code {
-    private List<EventModel> events;
-    private List<EventTicketModel> eventTickets;
-    private List<EventRegistModel> eventRegistrations;
+    private List<EventModel> events = new();
+    private List<EventTicketModel> eventTickets = new();
+    private List<EventRegistModel> eventRegistrations = new();
     private EventModel eventToEdit;
     private EventModel selectedEvent;
     private bool showTicketTable = false;
     private bool showParticipantsTable = false;
-    private EventTicketModel editingTicket;
+    private EventTicketModel editingTicket = new();
     private Guid selectedRegistrationId;
-    private EventRegistModel selectedRegistration;
+    private EventRegistModel selectedRegistration = new();
+    private string errorMessage;
+    private string sucessMessage;
+    private string token;
+    private string userEmail;
+    private Guid userId;
 
     protected override async Task OnInitializedAsync()
     {
-        await ListOrganizedEvents();
+
+        token = await localStorage.GetItemAsync<string>("token");
+
+    //Descodificar o token e obter a informação do utilizador
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var decodedToken = tokenHandler.ReadJwtToken(token);
+
+    // Extrai o email do utilizador
+        userEmail = decodedToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+
+    // Obter o ID do utilizador através do email
+        userId = await GetUserIdByEmail(userEmail);
+        await ListOrganizedEvents(userId);
+    }
+    
+    private async Task<Guid> GetUserIdByEmail(string email)
+    {
+        var response = await httpClient.GetAsync($"http://localhost:5052/api/User/GetUserByEmail/{email}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var user = await response.Content.ReadFromJsonAsync<UserModel>();
+            if (user != null)
+            {
+                return user.ID;
+            }
+        }
+
+        return Guid.Empty;
     }
 
-    private async Task ListOrganizedEvents()
+    private async Task ListOrganizedEvents(Guid idUser)
     {
         var token = await localStorage.GetItemAsync<string>("token");
 
@@ -260,10 +303,10 @@
         if (response.IsSuccessStatusCode)
         {
             var allEvents = await response.Content.ReadFromJsonAsync<List<EventModel>>();
-
-            // Filter the events where the organizer is the logged-in user
+          
+            //Filtra os eventos onde o organizador é o user logado
             var userId = await CurrentUserId();
-            events = allEvents.Where(evt => evt.Organizer_ID == userId).ToList();
+            events = allEvents.Where(evt => evt.organizer.ID == idUser).ToList();
         }
     }
  
@@ -280,7 +323,7 @@
             showParticipantsTable = true;
         }
     }
-
+  
     private async Task<Guid> CurrentUserId()
     {
         var token = await localStorage.GetItemAsync<string>("token");
@@ -335,11 +378,12 @@
 
             if (response.IsSuccessStatusCode)
             {
-                await ListOrganizedEvents();
+                await ListOrganizedEvents(userId);
             }
             else
             {
-                Console.WriteLine("Failed to remove event.");
+                errorMessage = "Failed to remove Event.";
+                sucessMessage = null;
             }
         }
     }
@@ -371,7 +415,8 @@
             }
             else
             {
-                Console.WriteLine("Failed to remove ticket.");
+                errorMessage = "Failed to remove ticket.";
+                sucessMessage = null;
             }
         }
     }
@@ -394,7 +439,8 @@
         }
         else
         {
-            Console.WriteLine("Failed to save ticket.");
+            errorMessage = "Failed to save ticket.";
+            sucessMessage = null;
         }
     }
 

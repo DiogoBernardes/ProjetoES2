@@ -94,9 +94,8 @@
 </table>
 
 @code {
-    private List<EventRegistModel> participantEvents;
+    private List<EventRegistModel> participantEvents = new();
     private string token;
-    
     private string userEmail;
     private Guid userId;
 
@@ -104,14 +103,14 @@
     {
         token = await localStorage.GetItemAsync<string>("token");
 
-    // Decode the token and extract user information
+    //Descodificar o token e obter a informação do utilizador
         var tokenHandler = new JwtSecurityTokenHandler();
         var decodedToken = tokenHandler.ReadJwtToken(token);
 
-    // Extract the user email
+    // Extrai o email do utilizador
         userEmail = decodedToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
 
-    // Get the user ID based on the email
+    // Obter o ID do utilizador através do email
         userId = await GetUserIdByEmail(userEmail);
         await ListParticipantEvents(userId);
     }
@@ -146,7 +145,7 @@
             if (response.IsSuccessStatusCode)
             {
                 Console.WriteLine("Event registration canceled successfully.");
-                await ListParticipantEvents(userId);  // Recarregar os eventos apÃ³s o cancelamento
+                await ListParticipantEvents(userId); 
             }
             else
             {

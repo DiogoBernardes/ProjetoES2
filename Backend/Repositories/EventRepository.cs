@@ -32,7 +32,8 @@ public class EventRepository : IEventRepository
                 Name = eventInfo.categoryNavigation.name
             },
             Organizer = new UserModel(){
-                Name = eventInfo.organizer.name
+                Name = eventInfo.organizer.name,
+                ID = eventInfo.organizer.id
             },
             Tickets = eventInfo.event_tickets.Select(ticket => new EventTicketModel()
             {
@@ -62,7 +63,8 @@ public class EventRepository : IEventRepository
                 Name = eventInfo.categoryNavigation.name
             },
             Organizer = new UserModel(){
-                Name = eventInfo.organizer.name
+                Name = eventInfo.organizer.name,
+                ID = eventInfo.organizer.id
             },
             Tickets = eventInfo.event_tickets.Select(ticket => new EventTicketModel()
             {

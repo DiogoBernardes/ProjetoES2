@@ -93,7 +93,7 @@
     
         <div class="user-detail">
             <span class="detail-label">Password:</span>
-            <span class="detail-value" type="password">********</span>
+            <span class="detail-value" type="password">*********</span>
         </div>
 
     
@@ -112,13 +112,13 @@ else
     private string token;
     private string userEmail;
     private Guid userId;
-    private UserModel users;
+    private UserModel users = new();
 
     protected override async Task OnInitializedAsync() {
         
         token = await localStorage.GetItemAsync<string>("token");
 
-    // Decodificar o token e extrair as informações do utilizador
+    // Descodificar o token e extrair as informações do utilizador
         var tokenHandler = new JwtSecurityTokenHandler();
         var decodedToken = tokenHandler.ReadJwtToken(token);
 

@@ -50,10 +50,21 @@ else
     <p>Error fetching user details.</p>
 }
 
+ @if (!string.IsNullOrEmpty(errorMessage) && string.IsNullOrEmpty(sucessMessage))
+       {
+           <div class="alert alert-danger">@errorMessage</div>
+       }
+       @if (string.IsNullOrEmpty(errorMessage) && !string.IsNullOrEmpty(sucessMessage))
+       {
+           <div class="alert alert-success">@sucessMessage</div>
+       }
+
 @code {
     private UpdateUserModel user;
     private List<RoleModel> roles;
-
+    private string errorMessage;
+    private string sucessMessage;
+    
     [Parameter]
     public string UserId { get; set; }
 
@@ -110,7 +121,8 @@ else
         }
         else
         {
-            Console.WriteLine("Failed to update user.");
+            errorMessage = "Failed to update user.";
+            sucessMessage = null;
         }
     }
 }
