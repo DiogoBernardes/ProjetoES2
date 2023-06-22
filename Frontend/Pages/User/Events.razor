@@ -3,7 +3,9 @@
 @using Blazored.LocalStorage
 @using System.Net.Http.Headers
 @using System.IdentityModel.Tokens.Jwt
+@using System.Security.Claims
 @using System.Text
+@using Frontend.Models.User
 @inject HttpClient httpClient
 @inject ILocalStorageService localStorage
 @inject NavigationManager navigationManager
@@ -123,23 +125,56 @@ else
     private List<EventModel> filteredEvents;
     private string searchByName;
     private string searchByCategory;
-
     private List<string> eventNames = new List<string>();
     private List<string> categories = new List<string>();
+    private string token;
+    private string userEmail;
+    private Guid userId;
+
 
     protected override async Task OnInitializedAsync()
     {
+        token = await localStorage.GetItemAsync<string>("token");
+
+    //Descodificar o token e obter a informação do utilizador
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var decodedToken = tokenHandler.ReadJwtToken(token);
+
+    // Extrai o email do utilizador
+        userEmail = decodedToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+
+    // Obter o ID do utilizador através do email
+        userId = await GetUserIdByEmail(userEmail);
+        await ListEvents(userId);
+      
         await LoadData();
+        
     }
 
     private async Task LoadData()
     {
-        await ListEvents();
+        //await ListEvents();
         PopulateDropdowns();
         FilterEvents();
     }
 
-    private async Task ListEvents()
+    private async Task<Guid> GetUserIdByEmail(string email)
+    {
+        var response = await httpClient.GetAsync($"http://localhost:5052/api/User/GetUserByEmail/{email}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var user = await response.Content.ReadFromJsonAsync<UserModel>();
+            if (user != null)
+            {
+                return user.ID;
+            }
+        }
+
+        return Guid.Empty;
+    }
+    
+    private async Task ListEvents(Guid idUser)
     {
         var token = await localStorage.GetItemAsync<string>("token");
 
@@ -149,7 +184,8 @@ else
 
         if (response.IsSuccessStatusCode)
         {
-            events = await response.Content.ReadFromJsonAsync<List<EventModel>>();
+            var allEvents = await response.Content.ReadFromJsonAsync<List<EventModel>>();
+            events = allEvents.Where(evt => evt.organizer.ID != idUser).ToList();
         }
     }
 
