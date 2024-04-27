@@ -1,11 +1,38 @@
-# Software Engineering II - Dev Kit #
+# Event and Participant Management  #
 
 ### Introduction ###
+This project consists of developing an event and participant management system, with the source code in C# organized in a solution composed of a backend project in Web API and a frontend project in Blazor.
 
+- **User Authentication:** Users can create accounts and log in with three levels of authentication: User, UserManager, and Admin, each with specific permissions.
+
+- **User Types:** Users can act as event organizers or participants.
+
+- **Event Management:** Organizers can create events with detailed information, including name, date, time, location, description, maximum capacity, and ticket price. They can also define various ticket types for each event.
+
+- **Event Editing:** Organizers have the ability to edit event information and manage activities, specifying details such as activity name, date, time, and description.
+
+- **Event Search:** Participants can search for events by name, date, location, and category.
+
+- **Event Registration:** Participants can register for events and select specific activities within the event.
+
+- **Profile Management:** Participants can manage their profiles by editing personal information such as name, email, and phone number.
+
+- **Unsubscribe:** Participants can opt to unsubscribe from specific events and activities.
+
+- **View Participants:** Organizers can view lists of registered participants for their events and specific activities.
+
+- **Communicating with Participants:** Organizers can send messages and updates to participants registered for their events.
+
+- **General and Specific Reports:** Users can generate general event reports, including metrics such as the number of events per category and total participants. Additionally, specific reports for each event are available, detailing participant counts per activity and revenue generated.
+
+General requirements include the implementation of three levels of authentication, data persistence in a database using Entity Framework, a simple web interface, data validation, structuring of the backend using architectural patterns and the use of Design Patterns.
+
+<br>
+
+### How to I setup my development environment? ###
 This solution allows you to easily install the development environment and its dependencies.
 This structure can be used for the project assignment in Software Engineering II course from Informatics Engineering at IPVC/ESTG.
 
-### How to I setup my development environment? ###
 
 * Install [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 * There are 2 alternatives:
@@ -41,7 +68,3 @@ docker-compose up -d
 
 ##### *pg_data* #####
 This is a volume to store and keep the database data intact, even if you stop the containers.
-
-___
-#### _Informatics Engineering @ipvc/estg, 2022-2023_ ####
-###### _Professors: Luís Teófilo_ ######
